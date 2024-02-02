@@ -5,9 +5,15 @@ class Steam:
         self.STEAM_KEY=key
     def get_user_steamid(self, username):
         pass
+    def get_user_summeries(self, steamids):
+        response = requests.get(f"http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key={self.STEAM_KEY}&steamids={steamids}")
+        return response.json()
     def get_user_friend_list(self, steamid):
         response = requests.get(f"http://api.steampowered.com/ISteamUser/GetFriendList/v0001/?key={self.STEAM_KEY}&steamid={steamid}&relationship=friend")
-        return response.json()
+        friend_ids = []
+        for i in response.json()["friendslist"]["friends"]:
+            friend_ids.append(i['steamid'])
+        return self.get_user_summeries(friend_ids)
     def get_user_achievements(self, steamid,appid):
         response = requests.get(f"http://api.steampowered.com/ISteamUserStats/GetPlayerAchievements/v0001/?appid={appid}&key={self.STEAM_KEY}&steamid={steamid}")
         return response.json()
@@ -19,4 +25,4 @@ class Steam:
         return response.json()
     def get_user_recently_played(self, steamid,count):
         response = requests.get(f"http://api.steampowered.com/IPlayerService/GetRecentlyPlayedGames/v0001/?key={self.STEAM_KEY}&steamid={steamid}&count={count}&format=json")
-        return response.json()["friendslist"]
+        return response.json()
