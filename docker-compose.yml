@@ -2,7 +2,7 @@ version: "3.7"
 
 services:
   ImgWebPy:
-    image: glcr.iefi.xyz/bhghdhfh/immich-random-photo-return:latest
+    image: ghcr.io/buttercheetah/gamekit:latest
     restart: unless-stopped
     environment:
       - STEAM_KEY=<changeme>
