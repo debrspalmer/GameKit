@@ -1,0 +1,11 @@
+version: "3.7"
+
+services:
+  ImgWebPy:
+    image: glcr.iefi.xyz/bhghdhfh/immich-random-photo-return:latest
+    restart: unless-stopped
+    environment:
+      - STEAM_KEY=<changeme>
+      - TIMEZONE=UTC
+    ports:
+      - 9996:5000
