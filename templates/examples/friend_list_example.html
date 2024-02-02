@@ -7,7 +7,11 @@
 <body>
     {% for friend in friends %}
     <div style="padding: 10px; background-color: #EEE; margin: 20px">
-        <p style="font-size: 24px">{{ friend }}</p>
+        <p style="font-size: 24px">Username: {{ friend['personaname'] }}</p>
+        <p style="font-size: 18px">SteamID: {{ friend['steamid'] }}</p>
+        {% if 'realname' in friend %}
+            <p style="font-size: 18px">Real Name: {{ friend['realname'] }}</p>
+        {% endif %}
     </div>
     {% endfor %}
 </body>

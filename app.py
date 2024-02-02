@@ -20,8 +20,7 @@ def main_page_example(run=0,error=False):
     return render_template("examples/main_page_example.html")
 @app.route('/dev/friend_list_example')
 def friend_list_example(run=0,error=False):
-    friends = Steam.get_user_friend_list("76561198180337238")["response"]["players"]
-    print(friends)
+    friends = list(Steam.get_user_friend_list("76561198180337238").values())
     return render_template("examples/friend_list_example.html", friends=friends)
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=8000, debug = True)
