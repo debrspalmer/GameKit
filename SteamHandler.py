@@ -42,6 +42,9 @@ class Steam:
             return self.cache['user_friend_list'][steamid]
 
         response = requests.get(f"http://api.steampowered.com/ISteamUser/GetFriendList/v0001/?key={self.STEAM_KEY}&steamid={steamid}&relationship=friend")
+        if not "friendslist" in response.json():
+            print(response.json(), "Error getting friends data")
+            return False
         friend_ids = [i['steamid'] for i in response.json()["friendslist"]["friends"]]
         data = self.get_user_summeries(friend_ids)
         self.cache['user_friend_list'][steamid] = data

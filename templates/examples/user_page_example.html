@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GameKit Friends</title>
+</head>
+<body>
+    <div style="padding: 10px; background-color: #EEE; margin: 20px">
+        <img src="{{ user['avatar'] }}">
+        <p style="font-size: 24px"><a href="{{ user['profileurl'] }}">Username: {{ user['personaname'] }}</a></p>
+        <p style="font-size: 18px">SteamID: {{ user['steamid'] }}</p>
+        {% if 'realname' in friend %}
+            <p style="font-size: 18px">Real Name: {{ user['realname'] }}</p>
+        {% endif %}
+        <a href="./{{ user['steamid'] }}/friends">Friends</a>
+    </div>
+</body>
+</html>
