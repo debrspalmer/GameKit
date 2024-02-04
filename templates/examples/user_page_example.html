@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>GameKit Friends</title>
+    <title>GameKit {{ user['personaname'] }}</title>
 </head>
 <body>
     <div style="padding: 10px; background-color: #EEE; margin: 20px">
@@ -12,7 +12,10 @@
         {% if 'realname' in friend %}
             <p style="font-size: 18px">Real Name: {{ user['realname'] }}</p>
         {% endif %}
-        <a href="./{{ user['steamid'] }}/friends">Friends</a>
+        <ul>
+            <li><a href="./{{ user['steamid'] }}/friends">Friends</a></li>
+            <li><a href="./{{ user['steamid'] }}/games">Games</a></li>
+        </ul>
     </div>
 </body>
 </html>

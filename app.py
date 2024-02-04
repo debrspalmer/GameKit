@@ -1,4 +1,3 @@
-# Version 1.2 9/13/23
 import requests, os, random, SteamHandler
 from flask import Flask, Response, render_template
 app = Flask(__name__)
@@ -28,5 +27,11 @@ def friend_list(steamid):
         return render_template("examples/friend_list_error_example.html", user=Steam.get_user_summeries([steamid])[steamid])
     friends = list(friends.values())
     return render_template("examples/friend_list_example.html", friends=friends)
+@app.route('/user/<steamid>/games')
+def game_list(steamid):
+    games = Steam.get_user_owned_games(steamid)['games']
+    if not games:
+        return render_template("examples/game_list_error_example.html", user=Steam.get_user_summeries([steamid])[steamid])
+    return render_template("examples/game_list_example.html", games=games)
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=8000, debug = True)

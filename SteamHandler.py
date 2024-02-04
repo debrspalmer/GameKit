@@ -60,7 +60,6 @@ class Steam:
         self.cache['user_achievements'][cache_key] = data
         return data
 
-
     def get_user_stats_for_game(self, steamid,appid):
         cache_key = f"stats_{steamid}_{appid}"
         if cache_key in self.cache['user_stats_for_game']:
@@ -70,14 +69,16 @@ class Steam:
         data = response.json()
         self.cache['user_stats_for_game'][cache_key] = data
         return data
+
     def get_user_owned_games(self, steamid):
         if steamid in self.cache['user_owned_games']:
             return self.cache['user_owned_games'][steamid]
         
         response = requests.get(f"http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key={self.STEAM_KEY}&steamid={steamid}&format=json")
-        data = response.json()
+        data = response.json()['response']
         self.cache['user_owned_games'][steamid] = data
         return data
+
     def get_user_recently_played(self, steamid,count):
         # Implement cache
         response = requests.get(f"http://api.steampowered.com/IPlayerService/GetRecentlyPlayedGames/v0001/?key={self.STEAM_KEY}&steamid={steamid}&count={count}&format=json")
