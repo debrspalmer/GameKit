@@ -2,9 +2,6 @@ name: Docker Latest
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
 
 jobs:
 
@@ -23,7 +20,14 @@ jobs:
         registry: ghcr.io
         username: ${{github.actor}}
         password: ${{secrets.GITHUB_TOKEN}}
+    - name: Extract Branch Name
+      shell: bash
+      run: |
+        branchName=${GITHUB_REF#refs/heads/}
+        if [ $branchName = 'main' ]; then tagname='latest'; fi
+        echo "::set-output name=tagname::$(echo $tagname)"
+      id: extract_branch
     - name: Build and publish the Docker image
       run: |
         docker build . --file Dockerfile --tag ghcr.io/buttercheetah/gamekit:latest
-        docker push ghcr.io/buttercheetah/gamekit:latest
+        docker push ghcr.io/buttercheetah/gamekit:${{ steps.extract_branch.outputs.tagname }}
