@@ -10,6 +10,8 @@ class Steam:
             'user_stats_for_game': {},
             'user_owned_games': {},
             'user_recently_played': {},
+            'game_news': {},
+            'game_global_achievement': {},
         }
 
     def get_user_steamid(self, username):
@@ -84,6 +86,29 @@ class Steam:
         response = requests.get(f"http://api.steampowered.com/IPlayerService/GetRecentlyPlayedGames/v0001/?key={self.STEAM_KEY}&steamid={steamid}&count={count}&format=json")
         return response.json()["friendslist"]
 
+    def get_game_news(self, appid,count=3,maxlength=300):
+        if appid in self.cache['game_news']:
+            return self.cache['game_news'][appid]
+        
+        response = requests.get(f"http://api.steampowered.com/ISteamNews/GetNewsForApp/v0002/?appid={appid}&count={count}&maxlength={maxlength}&format=json")
+        data = response.json()['response']
+        self.cache['game_news'][appid] = data
+        return data
+    
+    def get_global_achievement_percentage(self, appid):
+        if appid in self.cache['game_global_achievement']:
+            return self.cache['game_global_achievement'][appid]
+        
+        response = requests.get(f"http://api.steampowered.com/ISteamUserStats/GetGlobalAchievementPercentagesForApp/v0002/?gameid={appid}&format=xml")
+        data = response.json()['response']
+        self.cache['game_global_achievement'][appid] = data
+        return data
+    
+    def resolve_vanity_url(self, vanityurl):
+        vanityurl = str(vanityurl).replace("https://steamcommunity.com/id/", "").replace("/", "")
+        response = requests.get(f"http://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/?key={self.STEAM_KEY}&vanityurl={vanityurl}")
+        return response["response"]
+    
     def clear_cache(self):
         for cache_key in self.cache:
             self.cache[cache_key] = {}

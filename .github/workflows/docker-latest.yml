@@ -23,11 +23,12 @@ jobs:
     - name: Extract Branch Name
       shell: bash
       run: |
-        branchName=${GITHUB_REF#refs/heads/}
-        if [ $branchName = 'main' ]; then tagname='latest'; fi
-        echo "::set-output name=tagname::$(echo $tagname)"
+          branchName=${GITHUB_REF#refs/heads/}
+          branchName=$(echo "$branchName" | tr '[:upper:]' '[:lower:]')
+          if [ "$branchName" = 'main' ]; then tagname='latest'; else tagname=$branchName; fi
+          echo "::set-output name=tagname::$(echo $tagname)"
       id: extract_branch
     - name: Build and publish the Docker image
       run: |
-        docker build . --file Dockerfile --tag ghcr.io/buttercheetah/gamekit:latest
+        docker build . --file Dockerfile --tag ghcr.io/buttercheetah/gamekit:${{ steps.extract_branch.outputs.tagname }}
         docker push ghcr.io/buttercheetah/gamekit:${{ steps.extract_branch.outputs.tagname }}
