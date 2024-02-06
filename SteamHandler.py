@@ -76,7 +76,7 @@ class Steam:
         if steamid in self.cache['user_owned_games']:
             return self.cache['user_owned_games'][steamid]
         
-        response = requests.get(f"http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key={self.STEAM_KEY}&steamid={steamid}&format=json")
+        response = requests.get(f"http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key={self.STEAM_KEY}&steamid={steamid}&include_appinfo=true&format=json")
         data = response.json()['response']
         self.cache['user_owned_games'][steamid] = data
         return data
