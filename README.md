@@ -20,18 +20,22 @@ This Flask web application utilizes the Steam Web API to retrieve and display in
    pip install -r requirements.txt
    ```
 
-3. Set up your Steam API key:
+3. Set up enviroment variables:
    - Obtain a Steam API key from [Steamworks](https://steamcommunity.com/dev/apikey).
    - Set the API key as an environment variable named 'STEAM_KEY'.
    ```bash
     export STEAM_KEY="xxxx"
+   ```
+   - Set WEB_URL to the url of the webpage. Include http or https
+   ```bash
+     export WEB_URL="https://domain.com"
    ```
 
 4. Run the application:
     - Docker:
         - docker-compose examples provided under 'docker'
         - ```bash
-            docker run -e STEAM_KEY="xxx" -p <port to expose>:5000 ghcr.io/buttercheetah/gamekit:latest
+            docker run -e STEAM_KEY="xxx" -e WEB_URL="https://domain.com" -p <port to expose>:5000 ghcr.io/buttercheetah/gamekit:latest
             ```
     - Standalone:
         - ```bash

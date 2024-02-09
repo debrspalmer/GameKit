@@ -6,6 +6,7 @@ services:
     restart: unless-stopped
     environment:
       - STEAM_KEY=<changeme>
+      - WEB_URL=<changeme>
       - TIMEZONE=UTC
     ports:
       - 9996:5000

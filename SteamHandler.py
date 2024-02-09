@@ -1,4 +1,5 @@
 import requests
+from urllib.parse import urlencode
 
 class Steam:
     def __init__(self, key):
@@ -14,6 +15,23 @@ class Steam:
             'game_global_achievement': {},
         }
 
+    # OpenID
+    def get_openid_url(self,web_url):
+        steam_openid_url = 'https://steamcommunity.com/openid/login'
+        params = {
+        'openid.ns': "http://specs.openid.net/auth/2.0",
+        'openid.identity': "http://specs.openid.net/auth/2.0/identifier_select",
+        'openid.claimed_id': "http://specs.openid.net/auth/2.0/identifier_select",
+        'openid.mode': 'checkid_setup',
+        'openid.return_to': f'{web_url}/authorize',
+        'openid.realm': f'{web_url}'
+        }
+
+        query_string = urlencode(params)
+        auth_url = steam_openid_url + "?" + query_string
+        return(auth_url)
+
+    # API Calls
     def get_user_steamid(self, username):
         # Implement caching for this method if needed
         pass

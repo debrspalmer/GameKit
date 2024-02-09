@@ -10,5 +10,6 @@ RUN pip3 install -r requirements.txt
 COPY . .
 
 ENV STEAM_KEY=<API_URL>
+ENV WEB_URL=<API_URL>
 
 CMD [ "python3", "-m" , "flask", "run", "--host=0.0.0.0"]
