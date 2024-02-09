@@ -11,8 +11,9 @@ class Steam:
             'user_stats_for_game': {},
             'user_owned_games': {},
             'user_recently_played': {},
-            'game_news': {},
+            'app_news': {},
             'game_global_achievement': {},
+            'app_details': {},
         }
 
     # OpenID
@@ -31,7 +32,7 @@ class Steam:
         auth_url = steam_openid_url + "?" + query_string
         return(auth_url)
 
-    # API Calls
+    # User API Calls
     def get_user_steamid(self, username):
         # Implement caching for this method if needed
         pass
@@ -104,15 +105,6 @@ class Steam:
         response = requests.get(f"http://api.steampowered.com/IPlayerService/GetRecentlyPlayedGames/v0001/?key={self.STEAM_KEY}&steamid={steamid}&count={count}&format=json")
         return response.json()["friendslist"]
 
-    def get_game_news(self, appid,count=3,maxlength=300):
-        if appid in self.cache['game_news']:
-            return self.cache['game_news'][appid]
-        
-        response = requests.get(f"http://api.steampowered.com/ISteamNews/GetNewsForApp/v0002/?appid={appid}&count={count}&maxlength={maxlength}&format=json")
-        data = response.json()['response']
-        self.cache['game_news'][appid] = data
-        return data
-    
     def get_global_achievement_percentage(self, appid):
         if appid in self.cache['game_global_achievement']:
             return self.cache['game_global_achievement'][appid]
@@ -126,7 +118,39 @@ class Steam:
         vanityurl = str(vanityurl).replace("https://steamcommunity.com/id/", "").replace("/", "")
         response = requests.get(f"http://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/?key={self.STEAM_KEY}&vanityurl={vanityurl}")
         return response["response"]
-    
+
+    # Game API Calls
+    def get_app_details(self, appids):
+        result = {}
+
+        # Identify which steamids are not in the cache
+        not_cached_appids = [appid for appid in appids if appid not in self.cache['app_details']]
+
+        if not_cached_appids:
+            # Make one request for all not cached steamids
+            response = requests.get(f"http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key={self.STEAM_KEY}&steamids={','.join(not_cached_appids)}")
+            data = response.json()
+
+            # Update the cache with the new data
+            for app in data:
+                    if app['success']:
+                        self.cache['app_details'][app['data']["steam_appid"]] = app
+
+        # Retrieve data from cache for all steamids
+        for app in appids:
+            result[app] = self.cache['app_details'][app]
+
+        return result
+
+    def get_app_news(self, appid,count=3,maxlength=300):
+        if appid in self.cache['app_news']:
+            return self.cache['app_news'][appid]
+        
+        response = requests.get(f"http://api.steampowered.com/ISteamNews/GetNewsForApp/v0002/?appid={appid}&count={count}&maxlength={maxlength}&format=json")
+        data = response.json()['response']
+        self.cache['app_news'][appid] = data
+        return data
+
     def clear_cache(self):
         for cache_key in self.cache:
             self.cache[cache_key] = {}
