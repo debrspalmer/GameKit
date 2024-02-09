@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GameKit Steam Login</title>
+    <script>
+        // Function to get the value of a cookie by its name
+        function getCookie(cookieName) {
+            const name = cookieName + "=";
+            const decodedCookie = decodeURIComponent(document.cookie);
+            const cookieArray = decodedCookie.split(';');
+
+            for (let i = 0; i < cookieArray.length; i++) {
+                let cookie = cookieArray[i].trim();
+                if (cookie.indexOf(name) === 0) {
+                return cookie.substring(name.length);
+                }
+            }
+
+            return null;
+        }
+
+        // Check if the "redirect_url" cookie is set
+        const user_id_cookie = getCookie("user_id");
+
+        if (user_id_cookie) {
+            // Redirect the user to the stored URL
+            window.location.href = "{{ web_url }}/user/"+user_id_cookie;
+        } else {
+            // Handle the case when the cookie is not set (optional)
+            console.log("user_id cookie not found");
+            console.log("Redirecting to {{ redirect_url | safe }}")
+            window.location.href = "{{ redirect_url | safe }}";
+        }
+    </script>
+</head>
+<body>
+    <div style="padding: 10px; background-color: #EEE; margin: 20px">
+        <p style="font-size: 24px">Redirecting. Click <a href="{{ redirect_url | safe }}">here</a> if you are not redirected in a couple seconds</p>
+    </div>
+</body>
+</html>

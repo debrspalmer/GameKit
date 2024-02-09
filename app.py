@@ -8,12 +8,15 @@ web_url = os.environ.get('WEB_URL', 'web_url')
 
 @app.route("/auth")
 def auth_with_steam():
-  return redirect(Steam.get_openid_url(web_url))
+    return render_template("steam_login_redirect.html",redirect_url=Steam.get_openid_url(web_url))
+    #return redirect(Steam.get_openid_url(web_url))
 
 @app.route("/authorize")
 def authorize():
-  print(request.args)
-  return redirect(f"{web_url}/user/{str(request.args['openid.identity']).replace('https://steamcommunity.com/openid/id/','')}")
+    user_id=str(request.args['openid.identity']).replace('https://steamcommunity.com/openid/id/','')
+    #print(request.args)
+    return render_template("steam_login_receive_redirect.html",redirect_url=f"{web_url}/user/{user_id}",user_id=user_id)
+    #return redirect(f"{web_url}/user/{str(request.args['openid.identity']).replace('https://steamcommunity.com/openid/id/','')}")
 
 
 

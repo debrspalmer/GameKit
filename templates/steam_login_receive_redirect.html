@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GameKit Redirect</title>
+    <script>
+        // Get the value of {{ redirect_url }}
+        const redirectUrl = "{{ redirect_url | safe }}";
+        const user_id= "{{ user_id }}";
+
+        // Set the cookie named "redirect_url" with the value
+        document.cookie = "user_id=" + user_id;
+
+        // Redirect the user to the specified URL
+        window.location.href = redirectUrl;
+    </script>
+</head>
+<body>
+    <div style="padding: 10px; background-color: #EEE; margin: 20px">
+        <p style="font-size: 24px">Redirecting. Click <a href="{{ redirect_url | safe }}">here</a> if you are not redirected in a couple seconds</p>
+    </div>
+</body>
+</html>
