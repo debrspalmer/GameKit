@@ -5,7 +5,7 @@ on:
 
 jobs:
 
-  build_and_push:
+  build_test_push:
 
     runs-on: ubuntu-latest
     permissions:
@@ -29,7 +29,8 @@ jobs:
           if [ "$branchName" = 'main' ]; then tagname='latest'; else tagname=$branchName; fi
           echo "::set-output name=tagname::$(echo $tagname)"
       id: extract_branch
-    - name: Build and publish the Docker image
+    - name: Build, test, and publish the Docker image
       run: |
         docker build . --file Dockerfile --tag ghcr.io/buttercheetah/gamekit:${{ steps.extract_branch.outputs.tagname }}
+        docker run ghcr.io/buttercheetah/gamekit:${{ steps.extract_branch.outputs.tagname }} python3 /python-docker/tests/test-SteamHandler.py
         docker push ghcr.io/buttercheetah/gamekit:${{ steps.extract_branch.outputs.tagname }}
