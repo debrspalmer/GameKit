@@ -17,7 +17,6 @@ def auth_with_steam():
 @app.route("/authorize")
 def authorize():
     user_id=str(request.args['openid.identity']).replace('https://steamcommunity.com/openid/id/','')
-    DatabaseHandler.insert_user(request.args['openid.claimed_id'], user_id)
     #print(request.args)
     return render_template("steam_login_receive_redirect.html",redirect_url=f"{web_url}/user/{user_id}",user_id=user_id)
     #return redirect(f"{web_url}/user/{str(request.args['openid.identity']).replace('https://steamcommunity.com/openid/id/','')}")
@@ -33,19 +32,21 @@ def test():
     return Steam.get_user_friend_list("76561198180337238")
 @app.route('/user/<steamid>')
 def user(steamid):
+    user_info = Steam.get_user_summeries([steamid])[steamid]
+    DatabaseHandler.insert_user(user_info, steamid)
     return render_template("examples/user_page_example.html", user=Steam.get_user_summeries([steamid])[steamid])
 @app.route('/user/<steamid>/friends')
 def friend_list(steamid):
     friends = Steam.get_user_friend_list(steamid)
     if not friends:
         return render_template("examples/friend_list_error_example.html", user=Steam.get_user_summeries([steamid])[steamid])
-    DatabaseHandler.insert_friend_list(steamid, friends)
     friends = list(friends.values())
+    DatabaseHandler.insert_friend_list(steamid, friends)
     return render_template("examples/friend_list_example.html", friends=friends)
 @app.route('/user/<steamid>/games')
 def game_list(steamid):
     games = Steam.get_user_owned_games(steamid)['games']
-
+    
     if not games:
         return render_template("examples/game_list_error_example.html", user=Steam.get_user_summeries([steamid])[steamid])
     DatabaseHandler.insert_game_data(steamid, games)
