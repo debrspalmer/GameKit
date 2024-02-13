@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Search Page</title>
+    <script src="https://kit.fontawesome.com/b353a8d556.js" crossorigin="anonymous"></script>
+
+    <style>
+        html, body{
+            height: 100%;
+        }
+
+        .topnav {
+            position: relative;
+            overflow: hidden;
+            background-color: gray;
+            top: 0%;
+        }
+
+        .topnav a.logo {
+            float: left;
+            text-align: left;
+            margin-left: 10px;
+        }
+
+        .topnav a.name {
+            position: relative;
+            float: left;
+            line-height: 50px;
+            font-size: 30px;
+            margin-left: 5px;
+    
+        }
+        
+        .topnav a.spilt {
+            position: relative;
+            float: right;
+            text-align: end;
+            margin-right: 40px;
+        }
+        
+        .bottom-bar {
+            position: absolute;
+            bottom: 0px;
+            float: none;
+            text-align: center;
+        }
+        .search-area {
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+        }
+
+    
+        .form.search input[type=search] {
+            font-size: 18px;
+            float: right;            
+        }
+
+        .form.search button[type=sumbit]{
+            text-align: -999px;
+            float: left;
+            cursor: pointer;
+        }
+   
+        .search-for-other-things{
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            float: none;
+            text-align: center;
+        }
+        .picture1 {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            top: 10px;
+            left: 25%;
+            border: 3px solid black;
+            width: 100px;
+            height: 100px;
+            
+        }
+        .picture2 {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            top: 10px;
+            left: 60%;
+            border: 3px solid black;
+            width: 100px;
+            height: 100px;
+            
+        }
+        .btn {
+            display: flex;
+            position: relative;
+            color: white;
+            width: 100px;
+            height: 50px;
+        }
+        .Player{
+            
+            background-color: black;
+            border-radius: 12px;
+            margin-top: 120px;
+            margin-left: 15%;
+            
+        }
+        .Data{
+            background-color: black;
+            border-radius: 12px;
+            margin-top: 120px;
+            margin-left: 35%;
+        }
+
+    </style>
+
+
+</head>
+<body>
+    <div class="topnav" style="height: 5%;">
+        <a class="logo"><img src="Picture1.png" alt="test"  height="40" width="80"  ></a>
+        <a class="name">Game Kit</a>
+        <a class="spilt"><i class="fa-regular fa-circle-user" style="font-size: 25px;" ></i></a>
+        
+    </div>
+
+
+    <div class="bottom-bar" style="background-color: gray; width: 100%; height: 95%;"> 
+
+        <div class="search-area" style="background-color: lightgray; width: 100%; height: 49%;">
+           
+            <p style="top: 200px; position: relative; font-size: 50px;">What is the developer steam id?</p>
+
+            <form class="search-bar" style="top: 200px; position: relative;">
+                <input type="search", placeholder="Example: 76561198180337238" name="search" size="200">
+                <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+             </form>
+         
+             
+        </div>  
+
+        <div class="search-for-other-things" style="background-color: white; width:100%; height: 49%;">  
+            
+            <div class="picture1"><i class="fa-solid fa-code" style="font-size: 70px; "></i></div>
+            <div class="picture2"><i class="fa-solid fa-code" style="font-size: 70px; "></i></div>
+            
+            <form action="Search Page Players.html" id="playersearch"></form>
+            <form action="Search Page.html" id="datasearch"></form>
+
+            <button class="btn Player" form="playersearch">Search for Player</button>
+            <button class="btn Data" form="datasearch">Search for Data</button>
+        </div>  
+
+        Copyright 2024 GameKit & Co.
+
+    </div> 
+    
+</body>
+</html>
