@@ -76,7 +76,7 @@ navbar {
 }
 
 .grid-container {
-	height: 500px;
+	height: 400px;
   display: grid;
   grid-template-columns: auto auto;
   gap: 30px;
@@ -104,9 +104,10 @@ navbar {
 }
 
 .item3 {
+	height: 200px;
 	padding: 30px;
 	grid-column-start: 1;
-	grid-column-end: 2;
+	grid-column-end: 3;
 }
 
 .item4 {
