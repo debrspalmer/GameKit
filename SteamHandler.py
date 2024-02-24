@@ -7,13 +7,17 @@ class Steam:
         self.cache = {
             'user_summeries': {},
             'user_friend_list': {},
-            'user_achievements': {},
+            'user_achievements_per_game': {},
             'user_stats_for_game': {},
             'user_owned_games': {},
             'user_recently_played': {},
             'app_news': {},
             'game_global_achievement': {},
             'app_details': {},
+            'user_inventory': {},
+            'user_groups': {},
+            'user_level': {},
+            'user_badges': {}
         }
 
     # OpenID
@@ -33,10 +37,6 @@ class Steam:
         return(auth_url)
 
     # User API Calls
-    def get_user_steamid(self, username):
-        # Implement caching for this method if needed
-        pass
-
     def get_user_summeries(self, steamids):
         result = {}
 
@@ -71,14 +71,14 @@ class Steam:
         self.cache['user_friend_list'][steamid] = data
         return data
 
-    def get_user_achievements(self, steamid, appid):
+    def get_user_achievements_per_game(self, steamid, appid):
         cache_key = f"achievements_{steamid}_{appid}"
-        if cache_key in self.cache['user_achievements']:
-            return self.cache['user_achievements'][cache_key]
+        if cache_key in self.cache['user_achievements_per_game']:
+            return self.cache['user_achievements_per_game'][cache_key]
 
         response = requests.get(f"http://api.steampowered.com/ISteamUserStats/GetPlayerAchievements/v0001/?appid={appid}&key={self.STEAM_KEY}&steamid={steamid}")
         data = response.json()
-        self.cache['user_achievements'][cache_key] = data
+        self.cache['user_achievements_per_game'][cache_key] = data
         return data
 
     def get_user_stats_for_game(self, steamid,appid):
@@ -149,6 +149,47 @@ class Steam:
         response = requests.get(f"http://api.steampowered.com/ISteamNews/GetNewsForApp/v0002/?appid={appid}&count={count}&maxlength={maxlength}&format=json")
         data = response.json()['response']
         self.cache['app_news'][appid] = data
+        return data
+
+    def get_user_inventory(self, steamid):
+        if appid in self.cache['user_inventory']:
+            return self.cache['user_inventory'][steamid]
+        
+        response = requests.get(f"https://steamcommunity.com/inventory/{steamid}/440/2")
+        data = response.json()['response']
+        self.cache['user_inventory'][steamid] = data
+        return data
+
+    def get_user_group_list(self, steamid):
+        if steamid in self.cache['user_groups']:
+            return self.cache['user_groups'][steamid]
+        
+        response = requests.get(f"https://api.steampowered.com/ISteamUser/GetUserGroupList/v1?steamid={steamid}&key={self.STEAM_KEY}")
+        data = response.json()['response']
+        self.cache['user_groups'][steamid] = data
+        return data
+    
+    def get_number_of_players_in_game(self, appid):
+        response = requests.get(f"https://api.steampowered.com/ISteamUserStats/GetNumberOfCurrentPlayers/v1?appid={appid}")
+        data = response.json()['response']
+        return data
+
+    def get_user_steam_level(self, steamid):
+        if steamid in self.cache['user_level']:
+            return self.cache['user_level'][steamid]
+        
+        response = requests.get(f"https://api.steampowered.com/IPlayerService/GetSteamLevel/v1?steamid={steamid}&key={self.STEAM_KEY}")
+        data = response.json()['response']
+        self.cache['user_level'][steamid] = data
+        return data
+    
+    def get_user_badges(self, steamid):
+        if steamid in self.cache['user_badges']:
+            return self.cache['user_badges'][steamid]
+        
+        response = requests.get(f"https://api.steampowered.com/IPlayerService/GetBadges/v1?steamid={steamid}&key={self.STEAM_KEY}")
+        data = response.json()['response']
+        self.cache['user_badges'][steamid] = data
         return data
 
     def clear_cache(self):
