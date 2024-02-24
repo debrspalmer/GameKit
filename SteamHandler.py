@@ -117,7 +117,7 @@ class Steam:
     def resolve_vanity_url(self, vanityurl):
         vanityurl = str(vanityurl).replace("https://steamcommunity.com/id/", "").replace("/", "")
         response = requests.get(f"http://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/?key={self.STEAM_KEY}&vanityurl={vanityurl}")
-        return response["response"]
+        return response.json()["response"]
 
     # Game API Calls
     def get_app_details(self, appids):
