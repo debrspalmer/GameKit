@@ -48,6 +48,7 @@ def login():
     return render_template("LoginPage.html")
 @app.route('/user/<steamid>')
 def user(steamid):
+    # temporary implmentation
     Steam.get_user_friend_list(steamid)
     #Steam.get_user_achievements_per_game(steamid, appid)
     #Steam.get_user_stats_for_game(steamid, appid)
