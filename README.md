@@ -23,13 +23,23 @@ This Flask web application utilizes the Steam Web API to retrieve and display in
 3. Set up enviroment variables:
    - Obtain a Steam API key from [Steamworks](https://steamcommunity.com/dev/apikey).
    - Set the API key as an environment variable named 'STEAM_KEY'.
-   ```bash
-    export STEAM_KEY="xxxx"
-   ```
+      - Linux
+      ```bash
+      export STEAM_KEY="xxxx"
+      ```
+      - Windows
+      ```bash
+      $env:STEAM_KEY = "xxx"
+      ```
    - Set WEB_URL to the url of the webpage. Include http or https
-   ```bash
-     export WEB_URL="https://domain.com"
-   ```
+      - Linux
+      ```bash
+      export WEB_URL="https://domain.com"
+      ```
+      - Windows
+      ```bash
+      $env:WEB_URL="https://domain.com"
+      ```
 
 4. Run the application:
     - Docker:

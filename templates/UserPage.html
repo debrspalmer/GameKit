@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en-US">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width" />
+		<script src="https://kit.fontawesome.com/b353a8d556.js" crossorigin="anonymous"></script>
+		<!-- Wireframe2 -->
+		<title>Gamekit {{ user['personaname'] }}</title>
+		<script src="/js/AccountAPIFunctions.js"></script>
+		<script>
+			window.addEventListener('load', function () {
+				loadFriends("{{ user['steamid'] }}");
+				loadGames("{{ user['steamid'] }}");
+			})
+
+		</script>
+	</head>	
+	
+	<body>
+	
+		<header>
+		<a href="{{ web_url }}/">
+			<p>Search</p>
+		</a>
+		<a href="{{ web_url }}/auth">
+			<p>Profile</p>
+		</a>
+		<form class="search-bar" action="/search" method="get">
+			<input type="search", placeholder="Profile ID/Vanity URL" name="search" size="200">
+			<select name="type" id="type">
+				<option value="Account">Account</option>
+				<option value="Publisher">Publisher</option>
+			</select>
+			<button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+		 </form>
+		 <p>Account settings</p>
+		</header>
+		<main>
+			<img src="{{ user['avatarfull'] }}">
+			
+			<h1>{{ user['personaname'] }}</h1>
+			<h4>{{ user['realname'] }}</h4>
+			<div>
+			<p>User bio</p>
+			</div>
+			<h1>User Stats</h1>
+			<div>
+				<p>Most Played Games</p>
+				<div id="most_played_games">
+					<ul>
+						<li>Loading...</li>
+					</ul>
+				</div>
+			</div>
+			<aside>
+				<h1>Friends List</h1>
+				<div id="friends_list">
+				<ul>
+				<li>Loading...</li>
+				</ul>
+				</div>
+				<h1>Game Library</h1>
+				<div>
+				<ul id="games_list">
+				<li>Loading...</li>
+				</ul>
+				</div>
+			</aside>
+		</main>
+		<footer>
+		<p>Copyright 2024 GameKit & Co.</p>
+		</footer>
+	</body>
+</html>
