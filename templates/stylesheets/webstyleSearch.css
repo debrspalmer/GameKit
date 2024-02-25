@@ -1,0 +1,195 @@
+/* Filename: webstyleSearch.css */
+@media (min-width: 992px) and (max-width: 1199.98px) {
+	background: #E8E8E8;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+nav {
+	height: 80px;
+	width: 1920px;
+	background: #989898;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 15px;
+}
+
+.searchbar {
+	justify-content: flex-end;
+}
+
+navbar {
+	justify-content: flex-end;
+}
+
+.container {
+	background: white;
+	display: flex;
+	width: 1920px;
+	height: 875px;
+	margin: 0px;
+	padding: 10px;
+}
+
+.logo {
+	max-height: 5%;
+	max-width: 5%;
+	padding-bottom: 60px;
+	justify-content: flex-start;
+}
+
+.pfp {
+	max-height: 13;
+	max-width: 13%;
+}
+
+.main {
+	float: left;
+	margin-left: auto;
+	margin-right: auto;
+	text-align: center;
+	width: 100%;
+	line-height: 50px;
+	border: 3px solid #000000;
+	padding-top: 0%;
+}
+
+.search-box {
+	width: 1920px;
+	height: 150px;
+	text-align: center;
+	padding: 15%;
+	background: #E8E8E8;
+}
+
+.searchbar {
+     position: absolute;
+     top: 450px;
+     left: 575px;
+}
+
+.searchbar input {
+     height: 30px;
+     width: 800px;
+}
+
+/* Navbar container */
+.navbar {
+  overflow: hidden;
+  background-color: #333;
+  font-family: Arial;
+}
+
+/* Links inside the navbar */
+.navbar a {
+  float: left;
+  font-size: 16px;
+  color: white;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+}
+
+/* The dropdown container */
+.dropdown {
+  float: left;
+  overflow: hidden;
+}
+
+/* Dropdown button */
+.dropdown .dropbtn {
+  font-size: 16px;
+  border: none;
+  outline: none;
+  color: white;
+  padding: 14px 16px;
+  background-color: inherit;
+  font-family: inherit; /* Important for vertical align on mobile phones */
+  margin: 0; /* Important for vertical align on mobile phones */
+}
+
+/* Add a red background color to navbar links on hover */
+.navbar a:hover, .dropdown:hover .dropbtn {
+  background-color: red;
+}
+
+/* Dropdown content (hidden by default) */
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f9f9f9;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+
+/* Links inside the dropdown */
+.dropdown-content a {
+  float: none;
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+  text-align: left;
+}
+
+/* Add a grey background color to dropdown links on hover */
+.dropdown-content a:hover {
+  background-color: #ddd;
+}
+
+/* Show the dropdown menu on hover */
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+
+body {
+    height: 100%;
+    width: 100%;
+    background-color: linear-gradient(180deg, var(--gpStoreDarkGrey) 0%, var(--gpStoreDarkerGrey) 80%);
+}
+h1 {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 30px;
+    color: #4e697d;
+}
+
+h1.userstats {
+	padding-left: 25px;
+}
+
+h2 {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 20px;
+    color: #7A93A6;
+}
+
+h4 {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 15px;
+    color: #4e697d;
+}
+
+p {
+    font-size: 18px;
+    color: #A7BACC;
+}
+
+ol, ul {
+	list-style-position: inside;
+}
+
+img {
+    width: 100%;
+}
+
+footer {
+    text-align: center;
+    color: #4e697d;
+}
