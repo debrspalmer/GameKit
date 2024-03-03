@@ -14,6 +14,34 @@ groups_cache = {}
 level_cache = {}
 badges_cache = {}
 
+def execute_query(query, params=None, fetchone=False, cache=None):
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+
+    # Check if cache is provided and if the query exists in cache
+    if cache and query in cache:
+        result = cache[query]
+    else:
+        # Execute the query
+        if params:
+            cursor.execute(query, params)
+        else:
+            cursor.execute(query)
+        
+        if fetchone:
+            result = cursor.fetchone()
+        else:
+            result = cursor.fetchall()
+
+        # Add the result to the cache if cache is provided
+        if cache:
+            cache[query] = result
+
+    conn.commit()
+    conn.close()
+
+    return result
+
 
 def create_tables():
     conn = sqlite3.connect('database.db')
@@ -35,6 +63,16 @@ def create_tables():
             FOREIGN KEY (steamid) REFERENCES users(steamid)
         )
     ''')
+    
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS games (
+            id INTEGER PRIMARY KEY,
+            steamid TEXT,
+            appid INTEGER,
+            name TEXT,
+            playtime INTEGER DEFAULT 0
+        )
+    ''')
 
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS user_achievements (
@@ -53,16 +91,6 @@ def create_tables():
             appid INTEGER,
             stats_data TEXT,
             FOREIGN KEY (steamid) REFERENCES users(steamid)
-        )
-    ''')
-
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS games (
-            id INTEGER PRIMARY KEY,
-            steamid TEXT,
-            appid INTEGER,
-            name TEXT,
-            playtime INTEGER DEFAULT 0
         )
     ''')
 
@@ -174,7 +202,7 @@ def insert_friend_list(steamid, friends):
         for friend in friends:
             query = 'INSERT INTO friends (steamid, friend_steamid, friend_username) VALUES (?, ?, ?)'
             execute_query(query, (steamid, friend['steamid'], friend['personaname']))
-    friends_cache.clear()
+    # friends_cache.clear()
 
 
 def insert_user(user_info, steamid):
@@ -184,7 +212,17 @@ def insert_user(user_info, steamid):
     if existing_users_count == 0:
         query = 'INSERT INTO users (steamid, username) VALUES (?, ?)'
         execute_query(query, (steamid, user_info['personaname']))
-    users_cache.clear()
+    # users_cache.clear()
+    
+def insert_user_owned_games(steamid, games):
+    query = 'SELECT COUNT(*) FROM games WHERE steamid = ?'
+    existing_games_count = execute_query(query, (steamid,), fetchone=True, cache=games_cache)[0]
+
+    if existing_games_count == 0:
+        for game in games:
+            query = 'INSERT INTO games (steamid, appid, name, playtime) VALUES (?, ?, ?, ?)'
+            execute_query(query, (steamid, game['appid'], game['name'], game.get('playtime_forever', 0)), cache=games_cache)
+    # games_cache.clear()
 
 
 def insert_user_achievements(steamid, appid, achievements_data):
@@ -196,42 +234,30 @@ def insert_user_achievements(steamid, appid, achievements_data):
 def insert_user_stats(steamid, appid, stats_data):
     query = 'INSERT INTO user_stats (steamid, appid, stats_data) VALUES (?, ?, ?)'
     execute_query(query, (steamid, appid, stats_data), cache=stats_cache)
-    stats_cache.clear()
-
-
-def insert_user_owned_games(steamid, games):
-    query = 'SELECT COUNT(*) FROM games WHERE steamid = ?'
-    existing_games_count = execute_query(query, (steamid,), fetchone=True, cache=games_cache)[0]
-
-    if existing_games_count == 0:
-        for game in games:
-            query = 'INSERT INTO games (steamid, appid, name, playtime) VALUES (?, ?, ?, ?)'
-            execute_query(query, (steamid, game['appid'], game['name'], game.get('playtime_forever', 0)), cache=games_cache)
-    games_cache.clear()
-
+    # stats_cache.clear()
 
 def insert_user_recently_played(steamid, appid, playtime):
     query = 'INSERT INTO user_recently_played (steamid, appid, playtime) VALUES (?, ?, ?)'
     execute_query(query, (steamid, appid, playtime), cache=recently_played_cache)
-    recently_played_cache.clear()
+    # recently_played_cache.clear()
 
 
 def insert_game_global_achievement(appid, achievement_percentage):
     query = 'INSERT INTO game_global_achievement (appid, achievement_percentage) VALUES (?, ?)'
     execute_query(query, (appid, achievement_percentage), cache=global_achievement_cache)
-    global_achievement_cache.clear()
+    # global_achievement_cache.clear()
 
 
 def insert_app_details(appid, app_details_data):
     query = 'INSERT INTO app_details (appid, app_details_data) VALUES (?, ?)'
     execute_query(query, (appid, app_details_data), cache=app_details_cache)
-    app_details_cache.clear()
+    # app_details_cache.clear()
 
 
 def insert_user_inventory(steamid, inventory_data):
     query = 'INSERT INTO user_inventory (steamid, inventory_data) VALUES (?, ?)'
     execute_query(query, (steamid, inventory_data), cache=inventory_cache)
-    inventory_cache.clear()
+    # inventory_cache.clear()
 
 
 def insert_user_groups(steamid, group_data):
@@ -245,19 +271,19 @@ def insert_user_groups(steamid, group_data):
     
     query = 'INSERT INTO user_groups (steamid, group_id, group_name, group_url, group_avatar, group_description'
     execute_query(query, (steamid, group_id, group_name, group_url, group_avatar, group_description, group_member_count, group_visibility), cache=groups_cache)
-    groups_cache.clear()
+    # groups_cache.clear()
 
 
 def insert_user_level(steamid, level):
     query = 'INSERT INTO user_level (steamid, level) VALUES (?, ?)'
     execute_query(query, (steamid, level), cache=level_cache)
-    level_cache.clear()
+    # level_cache.clear()
 
 
 def insert_user_badges(steamid, badges_data):
     query = 'INSERT INTO user_badges (steamid, badges_data) VALUES (?, ?)'
     execute_query(query, (steamid, badges_data), cache=badges_cache)
-    badges_cache.clear()
+    # badges_cache.clear()
     
 def fetch_existing_user_count(steamid):
     query = 'SELECT COUNT(*) FROM users WHERE steamid = ?'

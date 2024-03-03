@@ -225,7 +225,7 @@ class Steam:
         self.cache['user_level'][steamid] = data
         
         # Insert data into database
-        database.insert_user_level(steamid, data)
+        database.insert_user_level(steamid, self.cache['user_level'][steamid])
 
         return data
     
@@ -238,7 +238,7 @@ class Steam:
         self.cache['user_badges'][steamid] = data
         
         # Insert data into Database
-        database.insert_user_badges(steamid, data)
+        database.insert_user_badges(steamid, self.cache['user_badges'][steamid])
 
         return data
 
