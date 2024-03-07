@@ -52,13 +52,16 @@ class Steam:
             # Update the cache with the new data
             for user in data["response"]["players"]:
                 self.cache['user_summeries'][user["steamid"]] = user
+                database.insert_user_summary(user)
+
                 
         # Retrieve data from cache for all steamids
         for steamid in steamids:
             result[steamid] = self.cache['user_summeries'][steamid]
 
-        # Insert user into database
-        database.insert_user(result[steamid], steamid)
+        
+        print(database.fetch_user(steamid))
+        print(result)
         return result
 
     def get_user_friend_list(self, steamid):
