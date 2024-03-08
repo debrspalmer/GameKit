@@ -13,10 +13,10 @@
 
 nav {
 	height: 80px;
-	width: 1920px;
+	width: 100%;
 	background: #989898;
 	display: flex;
-	justify-content: space-around;
+	justify-content: space-between;
 	align-items: center;
 	padding: 15px;
 }
@@ -32,8 +32,8 @@ navbar {
 .container {
 	background: #E8E8E8;
 	display: flex;
-	width: 1920px;
-	height: 875px;
+	width: 100%;
+	height: 90%;
 	margin: 0px;
 	padding: 10px;
 }
@@ -203,9 +203,10 @@ li.dropdown {
   display: block;
 }
 
-body {
+html, body {
     height: 100%;
     width: 100%;
+	overflow: hidden;
     background-color: linear-gradient(180deg, var(--gpStoreDarkGrey) 0%, var(--gpStoreDarkerGrey) 80%);
 }
 h1 {

@@ -12,7 +12,7 @@
 
 nav {
 	height: 80px;
-	width: 1920px;
+	width: 100%;
 	background: #989898;
 	display: flex;
 	justify-content: space-between;
@@ -31,10 +31,11 @@ navbar {
 .container {
 	background: white;
 	display: flex;
-	width: 1920px;
-	height: 875px;
+	width: 100%;
+	height: 90%;
 	margin: 0px;
 	padding: 10px;
+	flex-direction: column;
 }
 
 .logo {
@@ -61,11 +62,12 @@ navbar {
 }
 
 .search-box {
-	width: 1920px;
-	height: 150px;
+	width: 100%;
+	height: 100%;
 	text-align: center;
 	padding: 15%;
 	background: #E8E8E8;
+	
 }
 
 .searchbar {
@@ -149,11 +151,12 @@ navbar {
   display: block;
 }
 
-body {
+html, body {
     height: 100%;
     width: 100%;
     background-color: linear-gradient(180deg, var(--gpStoreDarkGrey) 0%, var(--gpStoreDarkerGrey) 80%);
 }
+
 h1 {
     font-family: Arial, Helvetica, sans-serif;
     font-size: 30px;
