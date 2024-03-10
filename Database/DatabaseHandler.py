@@ -145,8 +145,14 @@ class DatabaseManager:
         conn = sqlite3.connect(self.database)
         cursor = conn.cursor()
 
-        if query in self.cache:
-            result = self.cache[query]
+        if params:
+            # Use the query and parameters as the cache key
+            cache_key = (query, tuple(params))
+        else:
+            cache_key = query
+
+        if cache_key in self.cache:
+            result = self.cache[cache_key]
         else:
             if params:
                 cursor.execute(query, params)
@@ -158,72 +164,71 @@ class DatabaseManager:
             else:
                 result = cursor.fetchall()
 
-            self.cache[query] = result
+            self.cache[cache_key] = result
 
         conn.commit()
         conn.close()
 
         return result
 
-    def insert_user_summary(self, user_summary):
+    def insert_user_summary(self, reponse):
     # Insert user summary data into the database
-        for key, data in user_summary.items():
+        for data in reponse["response"]["players"]:
             steamid = data['steamid']
             existing_user = self.fetch_user(steamid)
-            if existing_user:
-                continue
+            if existing_user != []:
+                pass
+            else:
+                values = [
+                    data['steamid'],
+                    data['communityvisibilitystate'] if 'communityvisibilitystate' in data else '',
+                    data['profilestate'] if 'profilestate' in data else '',
+                    data['personaname'] if 'personaname' in data else '',
+                    data['commentpermission'] if 'commentpermission' in data else '',
+                    data['profileurl'] if 'profileurl' in data else '',
+                    data['avatar'] if 'avatar' in data else '',
+                    data['avatarmedium'] if 'avatarmedium' in data else '',
+                    data['avatarfull'] if 'avatarfull' in data else '',
+                    data['avatarhash'] if 'avatarhash' in data else '',
+                    data['lastlogoff'] if 'lastlogoff' in data else '',
+                    data['personastate'] if 'personastate' in data else '',
+                    data['realname'] if 'realname' in data else '',
+                    data['primaryclanid'] if 'primaryclanid' in data else '',
+                    data['timecreated'] if 'timecreated' in data else '',
+                    data['personastateflags'] if 'personastateflags' in data else ''
+                ]
 
-            # Prepare data for insertion
-            values = [
-                data['steamid'],
-                data['communityvisibilitystate'] if 'communityvisibilitystate' in data else '',
-                data['profilestate'] if 'profilestate' in data else '',
-                data['personaname'] if 'personaname' in data else '',
-                data['commentpermission'] if 'commentpermission' in data else '',
-                data['profileurl'] if 'profileurl' in data else '',
-                data['avatar'] if 'avatar' in data else '',
-                data['avatarmedium'] if 'avatarmedium' in data else '',
-                data['avatarfull'] if 'avatarfull' in data else '',
-                data['avatarhash'] if 'avatarhash' in data else '',
-                data['lastlogoff'] if 'lastlogoff' in data else '',
-                data['personastate'] if 'personastate' in data else '',
-                data['realname'] if 'realname' in data else '',
-                data['primaryclanid'] if 'primaryclanid' in data else '',
-                data['timecreated'] if 'timecreated' in data else '',
-                data['personastateflags'] if 'personastateflags' in data else ''
-            ]
+                # Insert user summary data into the database
+                query = '''
+                    INSERT INTO users (
+                        steamid,  
+                        communityvisibilitystate, 
+                        profilestate, 
+                        personaname,
+                        commentpermission, 
+                        profileurl, 
+                        avatar, 
+                        avatarmedium, 
+                        avatarfull, 
+                        avatarhash, 
+                        lastlogoff, 
+                        personastate, 
+                        realname,
+                        primaryclanid, 
+                        timecreated, 
+                        personastateflags
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                '''
+                self.execute_query(query, values)
 
-            # Insert user summary data into the database
-            query = '''
-                INSERT INTO users (
-                    steamid,  
-                    communityvisibilitystate, 
-                    profilestate, 
-                    personaname,
-                    commentpermission, 
-                    profileurl, 
-                    avatar, 
-                    avatarmedium, 
-                    avatarfull, 
-                    avatarhash, 
-                    lastlogoff, 
-                    personastate, 
-                    realname,
-                    primaryclanid, 
-                    timecreated, 
-                    personastateflags
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            '''
-            self.execute_query(query, values)
-
-            # Invalidate cache for users table
-            self.cache.pop('SELECT * FROM users', None)
+                # Invalidate cache for users table
+                self.cache.pop('SELECT * FROM users', None)
 
     def fetch_user(self, steamid):
-        query = "SELECT * FROM users WHERE steamid = ?"
-        if query in self.cache:
-            return self.cache[query]
+        if steamid in self.cache:
+            return self.cache[steamid]
 
+        query = "SELECT * FROM users WHERE steamid = ?"
         conn = sqlite3.connect(self.database)
         conn.row_factory = sqlite3.Row  # Set row factory to return rows as dictionaries
         cursor = conn.cursor()
@@ -233,10 +238,11 @@ class DatabaseManager:
 
         if result:
             result = dict(result)  # Convert the row to a dictionary
-            self.cache[query] = result  # Cache the result
-
-        return result
-
+            self.cache[steamid] = result  # Cache the result with steamid as key
+            return [result]  # Wrap the result in a list
+        else:
+            return []  # Return an empty list if no results are found
+        
     # def insert_friend_list(steamid, friends):
         # query = 'SELECT COUNT(*) FROM friends WHERE steamid = ?'
         # existing_friends_count = execute_query(query, (steamid,), fetchone=True, cache=friends_cache)[0]

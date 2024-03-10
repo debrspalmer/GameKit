@@ -21,12 +21,10 @@ class Steam:
             'user_badges': {}
         }
         self.db_manager = Database.DatabaseManager('database.db')
+        self.db_manager.create_tables()
 
     # OpenID
     def get_openid_url(self,web_url):
-        # Database creation
-        database = Database.DatabaseManager('database.db')
-        database.create_tables()
         steam_openid_url = 'https://steamcommunity.com/openid/login'
         params = {
         'openid.ns': "http://specs.openid.net/auth/2.0",
@@ -45,27 +43,19 @@ class Steam:
     def get_user_summeries(self, steamids):
         result = {}
 
-        # Identify which steamids are not in the database cache
-        not_cached_steamids = [steamid for steamid in steamids if not self.db_manager.fetch_user(steamid)]
-
+        # Identify which steamids are not in the cache
+        not_cached_steamids = [steamid for steamid in steamids if steamid not in self.db_manager.fetch_user(steamid)]
         if not_cached_steamids:
             # Make one request for all not cached steamids
             response = requests.get(f"http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key={self.STEAM_KEY}&steamids={','.join(not_cached_steamids)}")
             data = response.json()
-
-            # Update the cache with the new data
-            for user in data["response"]["players"]:
-                self.db_manager.insert_user_summary({user["steamid"]: user})
-
-        # Retrieve data from database for all steamids
+            self.db_manager.insert_user_summary(data)
+                
+        # Retrieve data from cache for all steamids
         for steamid in steamids:
-            user_data = self.db_manager.fetch_user(steamid)
-            if user_data:
-                user_dict = user_data
-                result[steamid] = user_dict
-        
-        return result
+            result[steamid] = self.db_manager.fetch_user(steamid)
 
+        return result
 
     def get_user_friend_list(self, steamid):
         if steamid in self.cache['user_friend_list']:
@@ -78,7 +68,6 @@ class Steam:
         friend_ids = [i['steamid'] for i in response.json()["friendslist"]["friends"]]
         data = self.get_user_summeries(friend_ids)
         self.cache['user_friend_list'][steamid] = data
-                
         return data
 
     def get_user_achievements_per_game(self, steamid, appid):
@@ -89,10 +78,6 @@ class Steam:
         response = requests.get(f"http://api.steampowered.com/ISteamUserStats/GetPlayerAchievements/v0001/?appid={appid}&key={self.STEAM_KEY}&steamid={steamid}")
         data = response.json()
         self.cache['user_achievements_per_game'][cache_key] = data
-        
-        # Insert data into database
-        database.insert_user_achievements(steamid, appid, data)
-
         return data
 
     def get_user_stats_for_game(self, steamid,appid):
@@ -103,10 +88,6 @@ class Steam:
         response = requests.get(f"http://api.steampowered.com/ISteamUserStats/GetUserStatsForGame/v0002/?appid={appid}&key={self.STEAM_KEY}&steamid={steamid}")
         data = response.json()
         self.cache['user_stats_for_game'][cache_key] = data
-        
-        # Insert data into database
-        database.insert_user_stats(steamid, appid, data)
-
         return data
 
     def get_user_owned_games(self, steamid):
@@ -116,19 +97,11 @@ class Steam:
         response = requests.get(f"http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key={self.STEAM_KEY}&steamid={steamid}&include_appinfo=true&format=json")
         data = response.json()['response']
         self.cache['user_owned_games'][steamid] = data
-        
-        
-        # Insert data into database
-        database.insert_user_owned_games(steamid, data['games'])
         return data
 
-    def get_user_recently_played(self, steamid, count):
+    def get_user_recently_played(self, steamid,count):
         # Implement cache
         response = requests.get(f"http://api.steampowered.com/IPlayerService/GetRecentlyPlayedGames/v0001/?key={self.STEAM_KEY}&steamid={steamid}&count={count}&format=json")
-        
-        # Insert data into database
-        database.insert_user_recently_played(steamid, response.json()["friendslist"])
-
         return response.json()["friendslist"]
 
     def get_global_achievement_percentage(self, appid):
@@ -138,10 +111,6 @@ class Steam:
         response = requests.get(f"http://api.steampowered.com/ISteamUserStats/GetGlobalAchievementPercentagesForApp/v0002/?gameid={appid}&format=xml")
         data = response.json()['response']
         self.cache['game_global_achievement'][appid] = data
-        
-        # Insert data into database
-        database.insert_game_global_achievement(appid, data)
-
         return data
     
     def resolve_vanity_url(self, vanityurl):
@@ -166,9 +135,6 @@ class Steam:
                     if app['success']:
                         self.cache['app_details'][app['data']["steam_appid"]] = app
 
-                        # Insert app details into database
-                        database.insert_app_details(app['data']["steam_appid"], app)
-                    
         # Retrieve data from cache for all steamids
         for app in appids:
             result[app] = self.cache['app_details'][app]
@@ -184,17 +150,13 @@ class Steam:
         self.cache['app_news'][appid] = data
         return data
 
-    def get_user_inventory(self, appid, steamid):
+    def get_user_inventory(self, steamid):
         if appid in self.cache['user_inventory']:
             return self.cache['user_inventory'][steamid]
         
         response = requests.get(f"https://steamcommunity.com/inventory/{steamid}/440/2")
         data = response.json()['response']
         self.cache['user_inventory'][steamid] = data
-        
-        # Insert data into database
-        database.insert_user_inventory(steamid, data)
-
         return data
 
     def get_user_group_list(self, steamid):
@@ -204,18 +166,11 @@ class Steam:
         response = requests.get(f"https://api.steampowered.com/ISteamUser/GetUserGroupList/v1?steamid={steamid}&key={self.STEAM_KEY}")
         data = response.json()['response']
         self.cache['user_groups'][steamid] = data
-        
-        # Insert data into database
-        group_data = response.json().get('response', {}).get('user_groups', [])
-
-        database.insert_user_groups(steamid, group_data)
-
         return data
     
     def get_number_of_players_in_game(self, appid):
         response = requests.get(f"https://api.steampowered.com/ISteamUserStats/GetNumberOfCurrentPlayers/v1?appid={appid}")
         data = response.json()['response']
-        
         return data
 
     def get_user_steam_level(self, steamid):
@@ -225,10 +180,6 @@ class Steam:
         response = requests.get(f"https://api.steampowered.com/IPlayerService/GetSteamLevel/v1?steamid={steamid}&key={self.STEAM_KEY}")
         data = response.json()['response']
         self.cache['user_level'][steamid] = data
-        
-        # Insert data into database
-        database.insert_user_level(steamid, self.cache['user_level'][steamid])
-
         return data
     
     def get_user_badges(self, steamid):
@@ -238,10 +189,6 @@ class Steam:
         response = requests.get(f"https://api.steampowered.com/IPlayerService/GetBadges/v1?steamid={steamid}&key={self.STEAM_KEY}")
         data = response.json()['response']
         self.cache['user_badges'][steamid] = data
-        
-        # Insert data into Database
-        database.insert_user_badges(steamid, self.cache['user_badges'][steamid])
-
         return data
 
     def clear_cache(self):
