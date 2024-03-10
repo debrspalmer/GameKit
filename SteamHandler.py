@@ -1,6 +1,6 @@
 import requests
 from urllib.parse import urlencode
-import Database.DatabaseHandler as database
+import Database.DatabaseHandler as Database
 
 class Steam:
     def __init__(self, key):
@@ -20,9 +20,13 @@ class Steam:
             'user_level': {},
             'user_badges': {}
         }
+        self.db_manager = Database.DatabaseManager('database.db')
 
     # OpenID
     def get_openid_url(self,web_url):
+        # Database creation
+        database = Database.DatabaseManager('database.db')
+        database.create_tables()
         steam_openid_url = 'https://steamcommunity.com/openid/login'
         params = {
         'openid.ns': "http://specs.openid.net/auth/2.0",
@@ -41,8 +45,8 @@ class Steam:
     def get_user_summeries(self, steamids):
         result = {}
 
-        # Identify which steamids are not in the cache
-        not_cached_steamids = [steamid for steamid in steamids if steamid not in self.cache['user_summeries']]
+        # Identify which steamids are not in the database cache
+        not_cached_steamids = [steamid for steamid in steamids if not self.db_manager.fetch_user(steamid)]
 
         if not_cached_steamids:
             # Make one request for all not cached steamids
@@ -51,18 +55,17 @@ class Steam:
 
             # Update the cache with the new data
             for user in data["response"]["players"]:
-                self.cache['user_summeries'][user["steamid"]] = user
-                database.insert_user_summary(user)
+                self.db_manager.insert_user_summary({user["steamid"]: user})
 
-                
-        # Retrieve data from cache for all steamids
+        # Retrieve data from database for all steamids
         for steamid in steamids:
-            result[steamid] = self.cache['user_summeries'][steamid]
-
+            user_data = self.db_manager.fetch_user(steamid)
+            if user_data:
+                user_dict = user_data
+                result[steamid] = user_dict
         
-        print(database.fetch_user(steamid))
-        print(result)
         return result
+
 
     def get_user_friend_list(self, steamid):
         if steamid in self.cache['user_friend_list']:
@@ -75,11 +78,7 @@ class Steam:
         friend_ids = [i['steamid'] for i in response.json()["friendslist"]["friends"]]
         data = self.get_user_summeries(friend_ids)
         self.cache['user_friend_list'][steamid] = data
-        
-        # Insert friends list into database
-        friends = list(data.values())
-        database.insert_friend_list(steamid, friends)
-        
+                
         return data
 
     def get_user_achievements_per_game(self, steamid, appid):

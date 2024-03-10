@@ -2,12 +2,10 @@ import requests, os, random, SteamHandler
 from json import dumps
 from flask import Flask, Response, render_template, redirect, request, send_from_directory
 app = Flask(__name__)
-import Database.DatabaseHandler as database
 
 Steam = SteamHandler.Steam(os.environ.get('STEAM_KEY', 'Steam_api_key'))
 web_url = os.environ.get('WEB_URL', 'web_url')
-# Database creation
-database.create_tables()
+
 
 @app.route('/')
 def default():
