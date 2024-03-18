@@ -3,7 +3,11 @@ import sqlite3
 class DatabaseManager:
     def __init__(self, database):
         self.database = database
-        self.cache = {}
+        self.cache = {
+            'user_summaries': {},
+            'friends': {},
+            'user_games': {}
+            }
 
     def create_tables(self):
         conn = sqlite3.connect(self.database)
@@ -35,7 +39,6 @@ class DatabaseManager:
                 id INTEGER PRIMARY KEY,
                 steamid TEXT,
                 friend_steamid TEXT,
-                friend_username TEXT,
                 FOREIGN KEY (steamid) REFERENCES users(steamid)
             )
         ''')
@@ -46,100 +49,46 @@ class DatabaseManager:
                 steamid TEXT,
                 appid INTEGER,
                 name TEXT,
-                playtime INTEGER DEFAULT 0
-            )
-        ''')
-
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS user_achievements (
-                id INTEGER PRIMARY KEY,
-                steamid TEXT,
-                appid INTEGER,
-                achievements_data TEXT,
-                FOREIGN KEY (steamid) REFERENCES users(steamid)
-            )
-        ''')
-
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS user_stats (
-                id INTEGER PRIMARY KEY,
-                steamid TEXT,
-                appid INTEGER,
-                stats_data TEXT,
-                FOREIGN KEY (steamid) REFERENCES users(steamid)
-            )
-        ''')
-
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS user_recently_played (
-                id INTEGER PRIMARY KEY,
-                steamid TEXT,
-                appid INTEGER,
-                playtime INTEGER,
-                FOREIGN KEY (steamid) REFERENCES users(steamid)
-            )
-        ''')
-
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS game_global_achievement (
-                id INTEGER PRIMARY KEY,
-                appid INTEGER,
-                achievement_percentage REAL
-            )
-        ''')
-
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS app_details (
-                id INTEGER PRIMARY KEY,
-                appid INTEGER,
-                app_details_data TEXT
-            )
-        ''')
-
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS user_inventory (
-                id INTEGER PRIMARY KEY,
-                steamid TEXT,
-                inventory_data TEXT,
-                FOREIGN KEY (steamid) REFERENCES users(steamid)
-            )
-        ''')
-
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS user_groups (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                steamid TEXT NOT NULL,
-                group_id TEXT NOT NULL,
-                group_name TEXT NOT NULL,
-                group_url TEXT NOT NULL,
-                group_avatar TEXT,
-                group_description TEXT,
-                group_member_count INTEGER,
-                group_visibility TEXT
-            )
-        ''')
-
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS user_level (
-                id INTEGER PRIMARY KEY,
-                steamid TEXT,
-                level INTEGER,
-                FOREIGN KEY (steamid) REFERENCES users(steamid)
-            )
-        ''')
-
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS user_badges (
-                id INTEGER PRIMARY KEY,
-                steamid TEXT,
-                badges_data TEXT,
-                FOREIGN KEY (steamid) REFERENCES users(steamid)
+                playtime_2weeks INTEGER,
+                playtime_forever INTEGER,
+                img_icon_url TEXT,
+                has_community_visible_stats BOOLEAN,
+                playtime_windows_forever INTEGER,
+                playtime_mac_forever INTEGER,
+                playtime_linux_forever INTEGER,
+                rtime_last_played INTEGER,
+                content_descriptorids TEXT,
+                playtime_disconnected INTEGER
             )
         ''')
 
         conn.commit()
         conn.close()
+     
+    def create_achievements_table(self, gameName):
         
+        gameName = gameName.replace(" ", "_").replace("'", "").replace('"', '')
+
+        # Create the SQL query to create the achievements table
+        query = '''
+            CREATE TABLE IF NOT EXISTS "{}_achievements" (
+                id INTEGER PRIMARY KEY,
+                steamid TEXT,
+                appid INT,
+                gameName TEXT,
+                apiname TEXT,
+                achieved INTEGER,
+                unlocktime INTEGER
+            )
+        '''.format(gameName)
+
+        # Execute the SQL query
+        conn = sqlite3.connect(self.database)
+        cursor = conn.cursor()
+        cursor.execute(query)
+        conn.commit()
+        conn.close()
+           
     def execute_query(self, query, params=None, fetchone=False):
         # Execute query and cache the result if needed
         conn = sqlite3.connect(self.database)
@@ -222,11 +171,11 @@ class DatabaseManager:
                 self.execute_query(query, values)
 
                 # Invalidate cache for users table
-                self.cache.pop('SELECT * FROM users', None)
+                self.cache['user_summaries'].pop('SELECT * FROM users', None)
 
     def fetch_user(self, steamid):
-        if steamid in self.cache:
-            return self.cache[steamid]
+        if steamid in self.cache['user_summaries']:
+            return self.cache['user_summaries'][steamid]
 
         query = "SELECT * FROM users WHERE steamid = ?"
         conn = sqlite3.connect(self.database)
@@ -238,178 +187,182 @@ class DatabaseManager:
 
         if result:
             result = dict(result)  # Convert the row to a dictionary
-            self.cache[steamid] = result  # Cache the result with steamid as key
+            self.cache['user_summaries'][steamid] = result  # Cache the result with steamid as key
             return [result]  # Wrap the result in a list
         else:
             return []  # Return an empty list if no results are found
         
-    # def insert_friend_list(steamid, friends):
-        # query = 'SELECT COUNT(*) FROM friends WHERE steamid = ?'
-        # existing_friends_count = execute_query(query, (steamid,), fetchone=True, cache=friends_cache)[0]
-
-        # if existing_friends_count == 0:
-        #     for friend in friends:
-        #         query = 'INSERT INTO friends (steamid, friend_steamid, friend_username) VALUES (?, ?, ?)'
-        #         execute_query(query, (steamid, friend['steamid'], friend['personaname']))
+    def insert_friend_list(self, steamid, friends):
+        if friends == self.fetch_friends(steamid):
+            pass
+        else:
+            query = 'INSERT INTO friends (steamid, friend_steamid) VALUES (?, ?)'
+            for friend in friends:
+                self.execute_query(query, (steamid, friend))
     
-# def insert_user_owned_games(steamid, games):
-#     query = 'SELECT COUNT(*) FROM games WHERE steamid = ?'
-#     existing_games_count = execute_query(query, (steamid,), fetchone=True, cache=games_cache)[0]
+    def fetch_friends(self, steamid):
+        if steamid in self.cache['friends']:
+            return self.cache['friends'][steamid]
 
-#     if existing_games_count == 0:
-#         for game in games:
-#             query = 'INSERT INTO games (steamid, appid, name, playtime) VALUES (?, ?, ?, ?)'
-#             execute_query(query, (steamid, game['appid'], game['name'], game.get('playtime_forever', 0)), cache=games_cache)
-
-
-# def insert_user_achievements(steamid, appid, achievements_data):
-#     query = 'SELECT COUNT(*) FROM user_achievements WHERE steamid = ? AND appid = ?'
-#     existing_achievements_count = execute_query(query, (steamid, appid), fetchone=True, cache=achievements_cache)[0]
-
-#     if existing_achievements_count == 0:
-#         query = 'INSERT INTO user_achievements (steamid, appid, achievements_data) VALUES (?, ?, ?)'
-#         execute_query(query, (steamid, appid, achievements_data), cache=achievements_cache)
-
-# def insert_user_stats(steamid, appid, stats_data):
-#     query = 'SELECT COUNT(*) FROM user_stats WHERE steamid = ? AND appid = ?'
-#     existing_stats_count = execute_query(query, (steamid, appid), fetchone=True, cache=stats_cache)[0]
-
-#     if existing_stats_count == 0:
-#         query = 'INSERT INTO user_stats (steamid, appid, stats_data) VALUES (?, ?, ?)'
-#         execute_query(query, (steamid, appid, stats_data), cache=stats_cache)
-
-# def insert_user_recently_played(steamid, appid, playtime):
-#     query = 'SELECT COUNT(*) FROM user_recently_played WHERE steamid = ? AND appid = ?'
-#     existing_recently_played_count = execute_query(query, (steamid, appid), fetchone=True, cache=recently_played_cache)[0]
-
-#     if existing_recently_played_count == 0:
-#         query = 'INSERT INTO user_recently_played (steamid, appid, playtime) VALUES (?, ?, ?)'
-#         execute_query(query, (steamid, appid, playtime), cache=recently_played_cache)
-
-# def insert_game_global_achievement(appid, achievement_percentage):
-#     query = 'SELECT COUNT(*) FROM game_global_achievement WHERE appid = ?'
-#     existing_global_achievement_count = execute_query(query, (appid,), fetchone=True, cache=global_achievement_cache)[0]
-
-#     if existing_global_achievement_count == 0:
-#         query = 'INSERT INTO game_global_achievement (appid, achievement_percentage) VALUES (?, ?)'
-#         execute_query(query, (appid, achievement_percentage), cache=global_achievement_cache)
-
-# def insert_app_details(appid, app_details_data):
-#     query = 'SELECT COUNT(*) FROM app_details WHERE appid = ?'
-#     existing_app_details_count = execute_query(query, (appid,), fetchone=True, cache=app_details_cache)[0]
-
-#     if existing_app_details_count == 0:
-#         query = 'INSERT INTO app_details (appid, app_details_data) VALUES (?, ?)'
-#         execute_query(query, (appid, app_details_data), cache=app_details_cache)
-
-# def insert_user_inventory(steamid, inventory_data):
-#     query = 'SELECT COUNT(*) FROM user_inventory WHERE steamid = ?'
-#     existing_inventory_count = execute_query(query, (steamid,), fetchone=True, cache=inventory_cache)[0]
-
-#     if existing_inventory_count == 0:
-#         query = 'INSERT INTO user_inventory (steamid, inventory_data) VALUES (?, ?)'
-#         execute_query(query, (steamid, inventory_data), cache=inventory_cache)
-
-# def insert_user_groups(steamid, group_data):
-#     for group_id, group_info in group_data:
-#         query = 'SELECT COUNT(*) FROM user_groups WHERE steamid = ? AND group_id = ?'
-#         existing_group_count = execute_query(query, (steamid, group_id), fetchone=True, cache=groups_cache)[0]
-
-#         if existing_group_count == 0:
-#             query = 'INSERT INTO user_groups (steamid, group_id, group_name, group_url, group_avatar, \
-#                 group_description, group_member_count, group_visibility) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
-#             execute_query(query, (steamid, group_id, group_info['group_name'], group_info['group_url'], \
-#                 group_info['group_avatar'], group_info['group_description'], group_info['group_member_count'], \
-#                     group_info['group_visibility']), cache=groups_cache)
+        query = "SELECT friend_steamid FROM friends WHERE steamid = ?"
+        conn = sqlite3.connect(self.database)
+        cursor = conn.cursor()
+        cursor.execute(query, (steamid,))
+        results = cursor.fetchall()
+        conn.close()
+        if results:
+            friends = [result[0] for result in results]  # Extract friend steamids from the results
+            self.cache['friends'][steamid] = friends  # Cache the results
+            return friends
+        else:
+            return []
     
+    def insert_user_owned_games(self, steamid, games):
+        existing_games = self.fetch_games(steamid)
+        if existing_games == games:
+            return  # Games for this user already exist in the database
 
-# def insert_user_level(steamid, level):
-#     query = 'SELECT COUNT(*) FROM user_level WHERE steamid = ?'
-#     existing_level_count = execute_query(query, (steamid,), fetchone=True, cache=level_cache)[0]
+        for game in games['games']:
+            values = [
+                steamid,
+                game['appid'],
+                game['name'],
+                game['playtime_2weeks'] if 'playtime_2weeks' in game else 0,
+                game['playtime_forever'] if 'playtime_forever' in game else 0,
+                game['img_icon_url'],
+                game['has_community_visible_stats'] if 'has_community_visible_stats' in game else False,
+                game['playtime_windows_forever'] if 'playtime_windows_forever' in game else 0,
+                game['playtime_mac_forever'] if 'playtime_mac_forever' in game else 0,
+                game['playtime_linux_forever'] if 'playtime_linux_forever' in game else 0,
+                game['rtime_last_played'] if 'rtime_last_played' in game else 0,
+                ','.join(str(desc) for desc in game['content_descriptorids']) if 'content_descriptorids' in game else '',
+                game['playtime_disconnected'] if 'playtime_disconnected' in game else 0
+            ]
 
-#     if existing_level_count == 0:
-#         query = 'INSERT INTO user_level (steamid, level) VALUES (?, ?)'
-#         execute_query(query, (steamid, level), cache=level_cache)
+            query = '''
+                INSERT INTO games (
+                    steamid,
+                    appid,
+                    name,
+                    playtime_2weeks,
+                    playtime_forever,
+                    img_icon_url,
+                    has_community_visible_stats,
+                    playtime_windows_forever,
+                    playtime_mac_forever,
+                    playtime_linux_forever,
+                    rtime_last_played,
+                    content_descriptorids,
+                    playtime_disconnected
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            '''
+            self.execute_query(query, values)
+                
+    def fetch_games(self, steamid):
+        if steamid in self.cache['user_games']:
+            return self.cache['user_games'][steamid]
 
-# def insert_user_badges(steamid, badges_data):
-#     query = 'SELECT COUNT(*) FROM user_badges WHERE steamid = ?'
-#     existing_badges_count = execute_query(query, (steamid,), fetchone=True, cache=badges_cache)[0]
+        query = "SELECT * FROM games WHERE steamid = ?"
+        conn = sqlite3.connect(self.database)
+        conn.row_factory = sqlite3.Row  # Set row factory to return rows as dictionaries
+        cursor = conn.cursor()
+        cursor.execute(query, (steamid,))
+        result = cursor.fetchall()
+        conn.close()
 
-#     if existing_badges_count == 0:
-#         query = 'INSERT INTO user_badges (steamid, badges_data) VALUES (?, ?)'
-#         execute_query(query, (steamid, badges_data), cache=badges_cache)
-    
-# def fetch_user(steamid):      
-#     query = 'SELECT * FROM users WHERE steamid = ?'
-#     result = execute_query(query, (steamid,), fetchone=True, cache=users_cache)
-#     return result
+        games_data = []
+        if result:
+            for row in result:
+                game = dict(row)
+                game.pop('id')
+                game.pop('steamid')
+                games_data.append(game)
 
-# def fetch_existing_user_count(steamid):
-#     query = 'SELECT COUNT(*) FROM users WHERE steamid = ?'
-#     result = execute_query(query, (steamid,), fetchone=True, cache=users_cache)
-#     return result[0] if result else 0
+            self.cache['user_games'][steamid] = {'game_count': len(games_data), 'games': games_data}
+            return self.cache['user_games'][steamid]
+        else:
+            return []
 
-# def fetch_existing_friends_count(steamid):
-#     query = 'SELECT COUNT(*) FROM friends WHERE steamid = ?'
-#     result = execute_query(query, (steamid,), fetchone=True, cache=friends_cache)
-#     return result[0] if result else 0
+    def insert_achievements(self, steamid, appid, achievements):
+        # Create the achievements table if it doesn't exist
+        gameName = achievements['playerstats']['gameName']
+        self.create_achievements_table(gameName)
 
-# def fetch_existing_user_achievements_count(steamid, appid):
-#     query = 'SELECT COUNT(*) FROM user_achievements WHERE steamid = ? AND appid = ?'
-#     result = execute_query(query, (steamid, appid), fetchone=True, cache=achievements_cache)
-#     return result[0] if result else 0
+        conn = sqlite3.connect(self.database)
+        cursor = conn.cursor()
 
-# def fetch_existing_user_stats_count(steamid, appid):
-#     query = 'SELECT COUNT(*) FROM user_stats WHERE steamid = ? AND appid = ?'
-#     result = execute_query(query, (steamid, appid), fetchone=True, cache=stats_cache)
-#     return result[0] if result else 0
+        # Insert achievements into the dynamic table
+        for achievement in achievements['playerstats']['achievements']:
+            values = [
+                steamid,
+                appid,
+                gameName,
+                achievement['apiname'],
+                achievement['achieved'],
+                achievement['unlocktime']
+            ]
+            query = '''
+                INSERT OR REPLACE INTO "{}_achievements" (
+                    steamid,
+                    appid,
+                    gameName,
+                    apiname,
+                    achieved,
+                    unlocktime
+                ) VALUES (?, ?, ?, ?, ?, ?)
+            '''.format(gameName.replace(" ", "_").replace("'", "").replace('"', ''))
 
-# def fetch_existing_game_count(steamid):
-#     query = 'SELECT COUNT(*) FROM games WHERE steamid = ?'
-#     result = execute_query(query, (steamid,), fetchone=True, cache=games_cache)
-#     return result[0] if result else 0
+            cursor.execute(query, values)
 
-# def fetch_existing_recently_played_count(steamid, appid):
-#     query = 'SELECT COUNT(*) FROM user_recently_played WHERE steamid = ? AND appid = ?'
-#     result = execute_query(query, (steamid, appid), fetchone=True, cache=recently_played_cache)
-#     return result[0] if result else 0
+        conn.commit()
+        conn.close()
+        
+    def fetch_user_achievements(self, steamid, gameName):
+        # Construct cache key
+        cache_key = f"{steamid}_{gameName}"
 
-# def fetch_existing_global_achievement_count(appid):
-#     query = 'SELECT COUNT(*) FROM game_global_achievement WHERE appid = ?'
-#     result = execute_query(query, (appid,), fetchone=True, cache=global_achievement_cache)
-#     return result[0] if result else 0
+        # Check if data exists in cache
+        if 'user_achievements' in self.cache and cache_key in self.cache['user_achievements']:
+            return self.cache['user_achievements'][cache_key]
 
-# def fetch_existing_app_details_count(appid):
-#     query = 'SELECT COUNT(*) FROM app_details WHERE appid = ?'
-#     result = execute_query(query, (appid,), fetchone=True, cache=app_details_cache)
-#     return result[0] if result else 0
+        conn = sqlite3.connect(self.database)
+        cursor = conn.cursor()
 
-# def fetch_existing_inventory_count(steamid):
-#     query = 'SELECT COUNT(*) FROM user_inventory WHERE steamid = ?'
-#     result = execute_query(query, (steamid,), fetchone=True, cache=inventory_cache)
-#     return result[0] if result else 0
+        query = '''
+            SELECT apiname, achieved, unlocktime
+            FROM "{}_achievements"
+            WHERE steamid = ? AND gameName = ?
+        '''.format(gameName.replace(" ", "_").replace("'", "").replace('"', ''))
 
-# def fetch_existing_groups_count(steamid):
-#     query = 'SELECT COUNT(*) FROM user_groups WHERE steamid = ?'
-#     result = execute_query(query, (steamid,), fetchone=True, cache=groups_cache)
-#     return result[0] if result else 0
+        cursor.execute(query, (steamid, gameName))
+        rows = cursor.fetchall()
 
-# def fetch_existing_level_count(steamid):
-#     query = 'SELECT COUNT(*) FROM user_level WHERE steamid = ?'
-#     result = execute_query(query, (steamid,), fetchone=True, cache=level_cache)
-#     return result[0] if result else 0
+        achievements = []
+        for row in rows:
+            achievement = {
+                'apiname': row[0],
+                'achieved': row[1],
+                'unlocktime': row[2]
+            }
+            achievements.append(achievement)
 
-# def fetch_existing_badges_count(steamid):
-#     query = 'SELECT COUNT(*) FROM user_badges WHERE steamid = ?'
-#     result = execute_query(query, (steamid,), fetchone=True, cache=badges_cache)
-#     return result[0] if result else 0
+        conn.close()
 
-# def fetch_existing_user_count(steamid):
-#     query = 'SELECT COUNT(*) FROM users WHERE steamid = ?'
-#     result = execute_query(query, (steamid,), fetchone=True, cache=users_cache)
-#     return result[0] if result else 0
+        # Store data in user_achievements cache
+        if 'user_achievements' not in self.cache:
+            self.cache['user_achievements'] = {}
 
-# def fetch_existing_game_count(steamid):
-#     query = 'SELECT COUNT(*) FROM games WHERE steamid = ?'
-#     result = execute_query(query, (steamid,), fetchone=True, cache=games_cache)
-#     return result[0] if result else 0
+        if achievements:
+            self.cache['user_achievements'][cache_key] = {
+                'playerstats': {
+                    'steamID': steamid,
+                    'gameName': gameName,
+                    'achievements': achievements
+                },
+                'success': True
+            }
+        else:
+            # If no data found, return an empty list
+            return []
+
+        return self.cache['user_achievements'][cache_key]

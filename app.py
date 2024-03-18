@@ -46,18 +46,8 @@ def login():
     return render_template("LoginPage.html")
 @app.route('/user/<steamid>')
 def user(steamid):
-    # temporary implmentation
-    #Steam.get_user_friend_list(steamid)
-    #Steam.get_user_achievements_per_game(steamid, appid)
-    #Steam.get_user_stats_for_game(steamid, appid)
-    #Steam.get_user_owned_games(steamid)
-    #Steam.get_user_recently_played(steamid, count)
-    #Steam.get_global_achievement_percentage(steamid, appid)
-    #Steam.get_app_details(steamid, appids)
-    #Steam.get_user_inventory(appid, steamid)
-    #Steam.get_user_group_list(steamid)
-    #Steam.get_user_steam_level(steamid)
-    #Steam.get_user_badges(steamid)
+    # Tempory implementation
+    Steam.get_user_achievements_per_game(steamid, 1687950)
     return render_template("UserPage.html", user=Steam.get_user_summeries([steamid])[steamid])
 @app.route('/user/<steamid>/friends')
 def friend_list(steamid):
@@ -69,6 +59,7 @@ def friend_list(steamid):
 @app.route('/user/<steamid>/games')
 def game_list(steamid):
     games = Steam.get_user_owned_games(steamid)['games']
+    print(games)
     if not games:
         return render_template("examples/game_list_error_example.html", user=Steam.get_user_summeries([steamid])[steamid])
     return render_template("examples/game_list_example.html", games=games)

@@ -6,11 +6,11 @@ class Steam:
     def __init__(self, key):
         self.STEAM_KEY = key
         self.cache = {
-            'user_summeries': {},
-            'user_friend_list': {},
+            # 'user_summeries': {},
+            #'user_friend_list': {},
             'user_achievements_per_game': {},
             'user_stats_for_game': {},
-            'user_owned_games': {},
+            #'user_owned_games': {},
             'user_recently_played': {},
             'app_news': {},
             'game_global_achievement': {},
@@ -21,6 +21,7 @@ class Steam:
             'user_badges': {}
         }
         self.db_manager = Database.DatabaseManager('database.db')
+        self.db_achievements = Database.DatabaseManager('achievements.db')
         self.db_manager.create_tables()
 
     # OpenID
@@ -58,19 +59,20 @@ class Steam:
         return result
 
     def get_user_friend_list(self, steamid):
-        if steamid in self.cache['user_friend_list']:
-            return self.cache['user_friend_list'][steamid]
-
-        response = requests.get(f"http://api.steampowered.com/ISteamUser/GetFriendList/v0001/?key={self.STEAM_KEY}&steamid={steamid}&relationship=friend")
-        if not "friendslist" in response.json():
-            print(response.json(), "Error getting friends data")
-            return False
-        friend_ids = [i['steamid'] for i in response.json()["friendslist"]["friends"]]
+        friend_ids = self.db_manager.fetch_friends(steamid)
+        if friend_ids == []:
+            response = requests.get(f"http://api.steampowered.com/ISteamUser/GetFriendList/v0001/?key={self.STEAM_KEY}&steamid={steamid}&relationship=friend")
+            if not "friendslist" in response.json():
+                print(response.json(), "Error getting friends data")
+                return False
+            friend_ids = [i['steamid'] for i in response.json()["friendslist"]["friends"]]
+            self.db_manager.insert_friend_list(steamid, friend_ids)
+            
         data = self.get_user_summeries(friend_ids)
-        self.cache['user_friend_list'][steamid] = data
         return data
 
     def get_user_achievements_per_game(self, steamid, appid):
+        # Continue with databasing implementation
         cache_key = f"achievements_{steamid}_{appid}"
         if cache_key in self.cache['user_achievements_per_game']:
             return self.cache['user_achievements_per_game'][cache_key]
@@ -78,6 +80,8 @@ class Steam:
         response = requests.get(f"http://api.steampowered.com/ISteamUserStats/GetPlayerAchievements/v0001/?appid={appid}&key={self.STEAM_KEY}&steamid={steamid}")
         data = response.json()
         self.cache['user_achievements_per_game'][cache_key] = data
+        self.db_achievements.insert_achievements(steamid, data)
+        print(self.db_achievements.fetch_user_achievements(steamid, data['playerstats']['gameName']))
         return data
 
     def get_user_stats_for_game(self, steamid,appid):
@@ -88,16 +92,19 @@ class Steam:
         response = requests.get(f"http://api.steampowered.com/ISteamUserStats/GetUserStatsForGame/v0002/?appid={appid}&key={self.STEAM_KEY}&steamid={steamid}")
         data = response.json()
         self.cache['user_stats_for_game'][cache_key] = data
+        #print(data)
         return data
 
     def get_user_owned_games(self, steamid):
-        if steamid in self.cache['user_owned_games']:
-            return self.cache['user_owned_games'][steamid]
-        
-        response = requests.get(f"http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key={self.STEAM_KEY}&steamid={steamid}&include_appinfo=true&format=json")
-        data = response.json()['response']
-        self.cache['user_owned_games'][steamid] = data
-        return data
+        games = self.db_manager.fetch_games(steamid)
+        if games == []:
+            response = requests.get(f"http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key={self.STEAM_KEY}&steamid={steamid}&include_appinfo=true&format=json")
+            data = response.json()['response']
+            self.db_manager.insert_user_owned_games(steamid, data)
+            games = self.db_manager.fetch_games(steamid)
+            return games
+        else:
+            return games
 
     def get_user_recently_played(self, steamid,count):
         # Implement cache
