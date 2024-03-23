@@ -47,8 +47,12 @@ def login():
 @app.route('/user/<steamid>')
 def user(steamid):
     # Tempory implementation
-    Steam.get_user_achievements_per_game(steamid, 1687950)
-    return render_template("UserPage.html", user=Steam.get_user_summeries([steamid])[steamid])
+    Steam.get_user_achievements_per_game(steamid, 1245620)
+    Steam.get_user_stats_for_game(steamid, 1245620)
+    # will need to figure out after questions
+    #Steam.get_user_inventory(steamid)
+    Steam.get_user_steam_level(steamid)
+    return render_template("UserPage.html", user=Steam.get_user_summeries([steamid])[steamid], steamid = steamid)
 @app.route('/user/<steamid>/friends')
 def friend_list(steamid):
     friends = Steam.get_user_friend_list(steamid)

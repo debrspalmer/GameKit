@@ -6,7 +6,11 @@ class DatabaseManager:
         self.cache = {
             'user_summaries': {},
             'friends': {},
-            'user_games': {}
+            'user_games': {},
+            'user_achievements': {},
+            'user_achieved_achievements': {},
+            #'user_recently_played': {},
+            #'game_global_achievement': {},
             }
 
     def create_tables(self):
@@ -65,22 +69,22 @@ class DatabaseManager:
         conn.commit()
         conn.close()
      
-    def create_achievements_table(self, gameName):
+    def create_achievements_table(self, appid):
         
-        gameName = gameName.replace(" ", "_").replace("'", "").replace('"', '')
+        appid = appid.replace(" ", "_").replace("'", "").replace('"', '')
 
         # Create the SQL query to create the achievements table
         query = '''
             CREATE TABLE IF NOT EXISTS "{}_achievements" (
                 id INTEGER PRIMARY KEY,
                 steamid TEXT,
-                appid INT,
+                appid INTEGER,
                 gameName TEXT,
                 apiname TEXT,
                 achieved INTEGER,
                 unlocktime INTEGER
             )
-        '''.format(gameName)
+        '''.format(appid)
 
         # Execute the SQL query
         conn = sqlite3.connect(self.database)
@@ -121,7 +125,6 @@ class DatabaseManager:
         return result
 
     def insert_user_summary(self, reponse):
-    # Insert user summary data into the database
         for data in reponse["response"]["players"]:
             steamid = data['steamid']
             existing_user = self.fetch_user(steamid)
@@ -179,18 +182,18 @@ class DatabaseManager:
 
         query = "SELECT * FROM users WHERE steamid = ?"
         conn = sqlite3.connect(self.database)
-        conn.row_factory = sqlite3.Row  # Set row factory to return rows as dictionaries
+        conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
         cursor.execute(query, (steamid,))
         result = cursor.fetchone()
         conn.close()
 
         if result:
-            result = dict(result)  # Convert the row to a dictionary
-            self.cache['user_summaries'][steamid] = result  # Cache the result with steamid as key
-            return [result]  # Wrap the result in a list
+            result = dict(result)
+            self.cache['user_summaries'][steamid] = result
+            return result
         else:
-            return []  # Return an empty list if no results are found
+            return []
         
     def insert_friend_list(self, steamid, friends):
         if friends == self.fetch_friends(steamid):
@@ -216,7 +219,7 @@ class DatabaseManager:
             return friends
         else:
             return []
-    
+
     def insert_user_owned_games(self, steamid, games):
         existing_games = self.fetch_games(steamid)
         if existing_games == games:
@@ -284,71 +287,78 @@ class DatabaseManager:
             return []
 
     def insert_achievements(self, steamid, appid, achievements):
-        # Create the achievements table if it doesn't exist
         gameName = achievements['playerstats']['gameName']
-        self.create_achievements_table(gameName)
-
-        conn = sqlite3.connect(self.database)
-        cursor = conn.cursor()
-
-        # Insert achievements into the dynamic table
-        for achievement in achievements['playerstats']['achievements']:
-            values = [
-                steamid,
-                appid,
-                gameName,
-                achievement['apiname'],
-                achievement['achieved'],
-                achievement['unlocktime']
-            ]
-            query = '''
-                INSERT OR REPLACE INTO "{}_achievements" (
+        string_appid = str(appid)
+        self.create_achievements_table(string_appid)
+        existing_user = self.fetch_user_achievements(steamid, string_appid)
+        if existing_user != []:
+            pass
+        else:
+            conn = sqlite3.connect(self.database)
+            cursor = conn.cursor()
+            for achievement in achievements['playerstats']['achievements']:
+                values = [
                     steamid,
                     appid,
                     gameName,
-                    apiname,
-                    achieved,
-                    unlocktime
-                ) VALUES (?, ?, ?, ?, ?, ?)
-            '''.format(gameName.replace(" ", "_").replace("'", "").replace('"', ''))
+                    achievement['apiname'],
+                    achievement['achieved'],
+                    achievement['unlocktime']
+                ]
+                query = '''
+                    INSERT OR REPLACE INTO "{}_achievements" (
+                        steamid,
+                        appid,
+                        gameName,
+                        apiname,
+                        achieved,
+                        unlocktime
+                    ) VALUES (?, ?, ?, ?, ?, ?)
+                '''.format(string_appid.replace(" ", "_").replace("'", "").replace('"', ''))
 
-            cursor.execute(query, values)
+                cursor.execute(query, values)
 
-        conn.commit()
-        conn.close()
+            conn.commit()
+            conn.close()
         
-    def fetch_user_achievements(self, steamid, gameName):
-        # Construct cache key
-        cache_key = f"{steamid}_{gameName}"
-
-        # Check if data exists in cache
+    def fetch_user_achievements(self, steamid, appid):
+        string_appid = str(appid)
+        cache_key = f"{steamid}_{string_appid}"
+        
         if 'user_achievements' in self.cache and cache_key in self.cache['user_achievements']:
             return self.cache['user_achievements'][cache_key]
 
         conn = sqlite3.connect(self.database)
         cursor = conn.cursor()
 
-        query = '''
-            SELECT apiname, achieved, unlocktime
-            FROM "{}_achievements"
-            WHERE steamid = ? AND gameName = ?
-        '''.format(gameName.replace(" ", "_").replace("'", "").replace('"', ''))
+        # Check if the table exists
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name=?", (f"{string_appid}_achievements",))
+        table_exists = cursor.fetchone() is not None
 
-        cursor.execute(query, (steamid, gameName))
+        if not table_exists:
+            conn.close()
+            return []
+        query = '''
+            SELECT gameName, apiname, achieved, unlocktime
+            FROM "{}_achievements"
+            WHERE steamid = ? AND appid = ?
+        '''.format(string_appid.replace(" ", "_").replace("'", "").replace('"', ''))
+
+        cursor.execute(query, (steamid, string_appid))
         rows = cursor.fetchall()
 
         achievements = []
+        gameName = None
         for row in rows:
+            gameName = row[0]
             achievement = {
-                'apiname': row[0],
-                'achieved': row[1],
-                'unlocktime': row[2]
+                'apiname': row[1],
+                'achieved': row[2],
+                'unlocktime': row[3]
             }
             achievements.append(achievement)
 
         conn.close()
-
-        # Store data in user_achievements cache
         if 'user_achievements' not in self.cache:
             self.cache['user_achievements'] = {}
 
@@ -362,7 +372,80 @@ class DatabaseManager:
                 'success': True
             }
         else:
-            # If no data found, return an empty list
             return []
 
         return self.cache['user_achievements'][cache_key]
+    
+    def fetch_user_achieved_achievements(self, steamid, appid):
+        string_appid = str(appid)
+        cache_key = f"{steamid}_{string_appid}"
+
+        if cache_key in self.cache['user_achieved_achievements']:
+            return self.cache['user_achieved_achievements'][cache_key]
+
+        conn = sqlite3.connect(self.database)
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name=?", (f"{string_appid}_achievements",))
+        table_exists = cursor.fetchone() is not None
+
+        if not table_exists:
+            conn.close()
+            return []
+
+        query = '''
+            SELECT apiname, achieved
+            FROM "{}_achievements"
+            WHERE steamid == ? AND appid == ? AND achieved == 1
+        '''.format(string_appid.replace(" ", "_").replace("'", "").replace('"', ''))
+
+        cursor.execute(query, (steamid, string_appid))
+        rows = cursor.fetchall()
+
+        achievements = []
+        gameName = None  # Initialize gameName to None
+        for row in rows:
+            achievement = {
+                'name': row[0], 
+                'achieved': row[1]
+            }
+            achievements.append(achievement)
+
+            if gameName is None:
+                gameName_query = '''
+                    SELECT gameName
+                    FROM "{}_achievements"
+                    WHERE apiname == ? AND steamid == ? AND appid == ?
+                    LIMIT 1
+                '''.format(string_appid.replace(" ", "_").replace("'", "").replace('"', ''))
+                cursor.execute(gameName_query, (row[0], steamid, string_appid))
+                gameName_row = cursor.fetchone()
+                if gameName_row:
+                    gameName = gameName_row[0]
+
+        conn.close()
+
+        result = {
+            'playerstats': {
+                'steamID': steamid,
+                'gameName': gameName,
+                'achievements': achievements
+            }
+        }
+
+        if 'user_achieved_achievements' not in self.cache:
+            self.cache['user_achieved_achievements'] = {}
+
+        self.cache['user_achieved_achievements'][cache_key] = result
+
+        formatted_result = {
+            'playerstats': {
+                'steamID': result['playerstats']['steamID'],
+                'gameName': result['playerstats']['gameName'],
+                'achievements': [{'name': achievement['name'], 'achieved': achievement['achieved']} for achievement in result['playerstats']['achievements'] if achievement['achieved'] == 1]
+            }
+        }
+
+        return formatted_result
+    
+# Add method to clear table in its entirety 
