@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en-US">
+	<head>
+	 <link href="stylesheets/webstyleContact.css" rel="stylesheet" type="text/css">
+	 <meta charset="utf-8" />
+	 <meta name="viewport" content="width=device-width" />
+	 
+	 <title>Contact Us</title>
+	</head>	
+	
+	<body>
+		<nav>
+			<div class="logo"><img src="GK_logo.png" alt="GameKit Logo"></div>
+			<!-- need to implement Navigation tool & Acc settings -->
+			<div class="navbar">
+			  <a href="Wire Frame 2.html">Your Profile</a>
+			  <div class="dropdown">
+				<button class="dropbtn">Dropdown
+				  <i class="fa fa-caret-down"></i>
+				</button>
+				<div class="dropdown-content">
+					<a href="Search_Page_Data.html">Search For Data</a>
+					<a href="Search_Page_Account.html">Search For Accounts</a>
+					<a href="About_Us.html">About Us</a>
+					<a href="#LogOut">Log Out</a>
+				</div>
+			  </div>
+			</div>
+		</nav>
+		<div class="container">
+		  <form action="action_page.php">
+
+			<label for="fname">First Name</label>
+			<input type="text" id="fname" name="firstname" placeholder="Your name...">
+
+			<label for="lname">Last Name</label>
+			<input type="text" id="lname" name="lastname" placeholder="Your last name...">
+
+			<label for="subject">Subject</label>
+			<select id="subject" name="subject">
+			  <option value="account_problem">Problem with Your Account</option>
+			  <option value="data_search">Problem with Searching for Data</option>
+			  <option value="player_search">Problem with Searching for Player</option>
+			</select>
+
+			<label for="info">Additional Information</label>
+			<textarea id="info" name="info" placeholder="Write something..." style="height:200px"></textarea>
+
+			<input type="submit" value="Submit">
+
+		  </form>
+		</div>
+		<footer>
+			<p>Copyright 2024 GameKit & Co.</p>
+		</footer>
+	</body>
+</html>
