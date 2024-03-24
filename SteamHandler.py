@@ -11,13 +11,11 @@ class Steam:
             #'user_achievements_per_game': {},
             #'user_stats_for_game': {},
             #'user_owned_games': {},
-            'user_recently_played': {}, # to be implemented
-            'app_news': {}, # to be removed caching wise
-            'game_global_achievement': {}, # to be implemented
-            'app_details': {}, # to be removed completely
+            #'user_recently_played': {},
+            #'game_global_achievement': {},
             'user_inventory': {}, # will need to be addressed 
-            'user_groups': {}, # to be implemented
-            'user_level': {},  # to be implemented
+            #'user_groups': {},
+            #'user_level': {},
             'user_badges': {} # to be implemented
         }
         self.db_manager = Database.DatabaseManager('database.db')
@@ -51,11 +49,10 @@ class Steam:
             response = requests.get(f"http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key={self.STEAM_KEY}&steamids={','.join(not_cached_steamids)}")
             data = response.json()
             self.db_manager.insert_user_summary(data)
-                
+            
         # Retrieve data from cache for all steamids
         for steamid in steamids:
             result[steamid] = self.db_manager.fetch_user(steamid)
-        print(result)
         return result
 
     def get_user_friend_list(self, steamid):
@@ -67,7 +64,6 @@ class Steam:
                 return False
             friend_ids = [i['steamid'] for i in response.json()["friendslist"]["friends"]]
             self.db_manager.insert_friend_list(steamid, friend_ids)
-            
         data = self.get_user_summeries(friend_ids)
         return data
 
@@ -77,94 +73,96 @@ class Steam:
             response = requests.get(f"http://api.steampowered.com/ISteamUserStats/GetPlayerAchievements/v0001/?appid={appid}&key={self.STEAM_KEY}&steamid={steamid}")
             data = response.json()
             try:
+                string_appid = str(appid)
+                self.db_achievements.create_achievements_table(string_appid)
                 self.db_achievements.insert_achievements(steamid, appid, data)
             except KeyError:
                 return "Profile is not public"
             achievements = self.db_achievements.fetch_user_achievements(steamid, appid)
             return achievements
+        
         return achievements
 
     def get_user_stats_for_game(self, steamid ,appid):
         stats_for_game = self.db_achievements.fetch_user_achieved_achievements(steamid, appid)
-        if stats_for_game != []:
+        if stats_for_game == []:
             # this api call may no longer be necessary as data is similar to user achievements beside not displaying
             # unlock time, some name changes, and some other information that I can leave out from a fetch call
-            #response = requests.get(f"http://api.steampowered.com/ISteamUserStats/GetUserStatsForGame/v0002/?appid={appid}&key={self.STEAM_KEY}&steamid={steamid}")
-            #data = response.json()
+            # response = requests.get(f"http://api.steampowered.com/ISteamUserStats/GetUserStatsForGame/v0002/?appid={appid}&key={self.STEAM_KEY}&steamid={steamid}")
+            # data = response.json()
             self.get_user_achievements_per_game(steamid, appid)
             stats_for_game = self.db_achievements.fetch_user_achieved_achievements(steamid, appid)
-            return stats_for_game
         return stats_for_game
 
     def get_user_owned_games(self, steamid):
-        games = self.db_manager.fetch_games(steamid)
+        games = self.db_manager.fetch_user_owned_games(steamid)
         if games == []:
             response = requests.get(f"http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key={self.STEAM_KEY}&steamid={steamid}&include_appinfo=true&format=json")
             data = response.json()['response']
             self.db_manager.insert_user_owned_games(steamid, data)
-            games = self.db_manager.fetch_games(steamid)
-            return games
-        else:
-            return games
+            games = self.db_manager.fetch_user_owned_games(steamid)
+        return games
 
     def get_user_recently_played(self, steamid,count):
-        # Implement cache
-        # Will not implement databasing here
-        response = requests.get(f"http://api.steampowered.com/IPlayerService/GetRecentlyPlayedGames/v0001/?key={self.STEAM_KEY}&steamid={steamid}&count={count}&format=json")
-        # corrected code possibly needs review
-        data = response.json()['response']
-        return data
-        # return response.json()["friendslist"]
+        recently_played = self.db_manager.fetch_recently_played_games(steamid, count)
+        if recently_played == []:
+            self.get_user_owned_games(steamid)
+            recently_played = self.db_manager.fetch_recently_played_games(steamid, count)
+        # api call is no longer need, can retrieve same data from database user games table
+        # response = requests.get(f"http://api.steampowered.com/IPlayerService/GetRecentlyPlayedGames/v0001/?key={self.STEAM_KEY}&steamid={steamid}&count={count}&format=json")
+        # data = response.json()['response']
+        return recently_played
 
     def get_global_achievement_percentage(self, appid):
-        if appid in self.cache['game_global_achievement']:
-            return self.cache['game_global_achievement'][appid]
-        
-        response = requests.get(f"http://api.steampowered.com/ISteamUserStats/GetGlobalAchievementPercentagesForApp/v0002/?gameid={appid}&format=json")
-        data = response.json()
-        self.cache['game_global_achievement'][appid] = data
-        print(data)
-        return data
+        global_percentage = self.db_achievements.fetch_achievement_percentages(appid)
+        if global_percentage == []:
+            response = requests.get(f"http://api.steampowered.com/ISteamUserStats/GetGlobalAchievementPercentagesForApp/v0002/?gameid={appid}&format=json")
+            data = response.json()
+            self.db_achievements.create_achievements_table(str(appid))
+            self.db_achievements.insert_global_achievements(appid, data)
+            global_percentage = self.db_achievements.fetch_achievement_percentages(appid)
+        return global_percentage
     
     def resolve_vanity_url(self, vanityurl):
         vanityurl = str(vanityurl).replace("https://steamcommunity.com/id/", "").replace("/", "")
         response = requests.get(f"http://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/?key={self.STEAM_KEY}&vanityurl={vanityurl}")
         return response.json()["response"]
 
+    
+    # This function should be removed, there doesnt seem to be documentation on this
+    # def get_app_details(self, appids):
+    #     result = {}
+
+    #     # Identify which steamids are not in the cache
+    #     not_cached_appids = [appid for appid in appids if appid not in self.cache['app_details']]
+
+    #     if not_cached_appids:
+    #         # Make one request for all not cached steamids
+    #         response = requests.get(f"http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key={self.STEAM_KEY}&steamids={','.join(not_cached_appids)}")
+    #         data = response.json()
+
+    #         # Update the cache with the new data
+    #         for app in data:
+    #                 if app['success']:
+    #                     self.cache['app_details'][app['data']["steam_appid"]] = app
+
+    #     # Retrieve data from cache for all steamids
+    #     for app in appids:
+    #         result[app] = self.cache['app_details'][app]
+
+    #     print(result)
+    #     return result
+
     # Game API Calls
-    def get_app_details(self, appids):
-        result = {}
-
-        # Identify which steamids are not in the cache
-        not_cached_appids = [appid for appid in appids if appid not in self.cache['app_details']]
-
-        if not_cached_appids:
-            # Make one request for all not cached steamids
-            response = requests.get(f"http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key={self.STEAM_KEY}&steamids={','.join(not_cached_appids)}")
-            data = response.json()
-
-            # Update the cache with the new data
-            for app in data:
-                    if app['success']:
-                        self.cache['app_details'][app['data']["steam_appid"]] = app
-
-        # Retrieve data from cache for all steamids
-        for app in appids:
-            result[app] = self.cache['app_details'][app]
-
-        print(result)
-        return result
-
+    # Removed caching for app news
     def get_app_news(self, appid,count=3,maxlength=300):
-        if appid in self.cache['app_news']:
-            return self.cache['app_news'][appid]
-        
         response = requests.get(f"http://api.steampowered.com/ISteamNews/GetNewsForApp/v0002/?appid={appid}&count={count}&maxlength={maxlength}&format=json")
         # data = response.json()['response']
         data = response.json()
         self.cache['app_news'][appid] = data
         return data
 
+    # This function has some sort of bug
     def get_user_inventory(self, steamid):
         # if appid in self.cache['user_inventory']:
         #     return self.cache['user_inventory'][steamid]
@@ -177,13 +175,16 @@ class Steam:
         return data
 
     def get_user_group_list(self, steamid):
-        if steamid in self.cache['user_groups']:
-            return self.cache['user_groups'][steamid]
-        
-        response = requests.get(f"https://api.steampowered.com/ISteamUser/GetUserGroupList/v1?steamid={steamid}&key={self.STEAM_KEY}")
-        data = response.json()['response']
-        self.cache['user_groups'][steamid] = data
-        return data
+        # steamid hard coded here for testing, should be removed 
+        steamid = '76561198180337238'
+        groups = self.db_manager.fetch_user_groups(steamid)
+        if groups == []:
+            response = requests.get(f"https://api.steampowered.com/ISteamUser/GetUserGroupList/v1?steamid={steamid}&key={self.STEAM_KEY}")
+            data = response.json()['response']
+            self.db_manager.insert_user_groups(steamid, data)
+            groups = self.db_manager.fetch_user_groups(steamid)
+            return groups
+        return groups
     
     def get_number_of_players_in_game(self, appid):
         response = requests.get(f"https://api.steampowered.com/ISteamUserStats/GetNumberOfCurrentPlayers/v1?appid={appid}")
@@ -191,15 +192,13 @@ class Steam:
         return data
 
     def get_user_steam_level(self, steamid):
-        if steamid in self.cache['user_level']:
-            print(self.cache['user_level'][steamid])
-            return self.cache['user_level'][steamid]
-        
-        response = requests.get(f"https://api.steampowered.com/IPlayerService/GetSteamLevel/v1?steamid={steamid}&key={self.STEAM_KEY}")
-        data = response.json()['response']
-        self.cache['user_level'][steamid] = data
-        print(data)
-        return data
+        level = self.db_manager.fetch_user_level(steamid)
+        if level == []:
+            response = requests.get(f"https://api.steampowered.com/IPlayerService/GetSteamLevel/v1?steamid={steamid}&key={self.STEAM_KEY}")
+            data = response.json()['response']
+            self.db_manager.insert_user_level(steamid, data)
+            level = self.db_manager.fetch_user_level(steamid)
+        return level
     
     def get_user_badges(self, steamid):
         if steamid in self.cache['user_badges']:
@@ -208,6 +207,7 @@ class Steam:
         response = requests.get(f"https://api.steampowered.com/IPlayerService/GetBadges/v1?steamid={steamid}&key={self.STEAM_KEY}")
         data = response.json()['response']
         self.cache['user_badges'][steamid] = data
+        print(data)
         return data
 
     def clear_cache(self):
