@@ -12,7 +12,8 @@ class DatabaseManager:
             'recently_played': {},
             'user_groups': {},
             'game_global_achievement': {},
-            'user_level': {}
+            'user_level': {},
+            'user_badges': {}
             }
 
     def create_tables(self):
@@ -80,10 +81,34 @@ class DatabaseManager:
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS UserLevel (
                 steamid TEXT PRIMARY KEY,
-                player_level INTEGER
+                player_xp INTEGER,
+                player_level INTEGER,
+                player_xp_needed_to_level_up INTEGER,
+                player_xp_needed_current_level INTEGER
             )
         ''')
 
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS Badges (
+                id INTEGER PRIMARY KEY,
+                steamid TEXT,
+                badgeid INTEGER,
+                level INTEGER,
+                completion_time INTEGER,
+                xp INTEGER,
+                scarcity INTEGER
+            )
+        ''')
+        
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS AchievementPercentages (
+                id INTEGER PRIMARY KEY,
+                appid INTEGER,
+                name TEXT,
+                percent REAL
+            )
+        ''')
+        
         conn.commit()
         conn.close()
      
@@ -91,7 +116,6 @@ class DatabaseManager:
         
         appid = appid.replace(" ", "_").replace("'", "").replace('"', '')
 
-        # Create the SQL query to create the achievements table
         query = '''
             CREATE TABLE IF NOT EXISTS "{}_achievements" (
                 id INTEGER PRIMARY KEY,
@@ -104,20 +128,8 @@ class DatabaseManager:
             )
         '''.format(appid)
 
-        # Execute the SQL query
         conn = sqlite3.connect(self.database)
         cursor = conn.cursor()
-        cursor.execute(query)
-        
-        query = '''
-            CREATE TABLE IF NOT EXISTS AchievementPercentages (
-                id INTEGER PRIMARY KEY,
-                appid INTEGER,
-                name TEXT,
-                percent REAL
-            )
-        '''
-        
         cursor.execute(query)
         conn.commit()
         conn.close()
@@ -201,9 +213,6 @@ class DatabaseManager:
                     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 '''
                 self.execute_query(query, values)
-
-                # Invalidate cache for users table
-                self.cache['user_summaries'].pop('SELECT * FROM Users', None)
 
     def fetch_user(self, steamid):
         if steamid in self.cache['user_summaries']:
@@ -608,20 +617,26 @@ class DatabaseManager:
             return []
         
     def insert_user_level(self, steamid, data):
-        existing_level = self.fetch_user_groups(steamid)
+        existing_level = self.fetch_user_level(steamid)
         if existing_level != []:
             return
-        
+
         values = [
             steamid, 
-            data['player_level']
+            data['player_xp'],
+            data['player_level'],
+            data['player_xp_needed_to_level_up'],
+            data['player_xp_needed_current_level']
             ]
         
         query = '''
                 INSERT INTO UserLevel (
                     steamid,
-                    player_level
-                ) VALUES (?, ?)
+                    player_xp,
+                    player_level,
+                    player_xp_needed_to_level_up,
+                    player_xp_needed_current_level
+                ) VALUES (?, ?, ?, ?, ?)
             '''
         self.execute_query(query, values)
         
@@ -643,4 +658,109 @@ class DatabaseManager:
             return self.cache['user_level'][steamid]
         else:
             return []
-# Add method to clear table in its entirety 
+
+    def insert_user_badges(self, steamid, data):
+        exisiting_badges = self.fetch_user_badges(steamid) 
+        if exisiting_badges != []:
+            return
+        
+        for badge in data['badges']:
+            badgeid = badge['badgeid']
+            level = badge['level']
+            completion_time = badge['completion_time']
+            xp = badge['xp']
+            scarcity = badge['scarcity']
+            values = (steamid, badgeid, level, completion_time, xp, scarcity)
+            query = '''
+                INSERT INTO Badges (steamid, badgeid, level, completion_time, xp, scarcity)
+                VALUES (?, ?, ?, ?, ?, ?)
+            '''
+            self.execute_query(query, values)
+            
+    def fetch_user_badges(self, steamid):
+        if steamid in self.cache['user_badges']:
+            return self.cache['user_badges'][steamid]
+        
+        query = "SELECT * FROM Badges WHERE steamid = ?"
+        conn = sqlite3.connect(self.database)
+        cursor = conn.cursor()
+        cursor.execute(query, (steamid,))
+        results = cursor.fetchall()
+        query = "SELECT * FROM UserLevel WHERE steamid = ?"
+        conn.row_factory = sqlite3.Row
+        cursor.execute(query, (steamid,))
+        # information represents additional info from user level table to be added to return and cache
+        information = cursor.fetchall()
+        conn.close()
+        badges = []
+        if results and information:
+            for result in results:
+                badge = {
+                    'badgeid': result[2],
+                    'level': result[3],
+                    'completion_time': result[4],
+                    'xp': result[5],
+                    'scarcity': result[6]
+                }
+                badges.append(badge)
+            info = []
+            for player_info in information:
+                for xp in player_info:
+                    info.append(xp)
+            
+            user_badges = {'badges': badges, 'player_xp': info[1], 'player_level': info[2], \
+                'player_xp_needed_to_level_up': info[3], 'player_xp_needed_current_level': info[4]}
+            self.cache['user_badges'][steamid] = user_badges
+            return self.cache['user_badges'][steamid]
+        else:
+            return []
+
+    def clear_users_table(self):
+        conn = sqlite3.connect(self.database)
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM Users")
+        conn.commit()
+        conn.close()
+
+    def clear_friends_table(self):
+        conn = sqlite3.connect(self.database)
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM Friends")
+        conn.commit()
+        conn.close()
+
+    def clear_user_games_table(self):
+        conn = sqlite3.connect(self.database)
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM UserGames")
+        conn.commit()
+        conn.close()
+
+    def clear_user_groups_table(self):
+        conn = sqlite3.connect(self.database)
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM UserGroups")
+        conn.commit()
+        conn.close()
+
+    def clear_user_level_table(self):
+        conn = sqlite3.connect(self.database)
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM UserLevel")
+        conn.commit()
+        conn.close()
+
+    def clear_badges_table(self):
+        conn = sqlite3.connect(self.database)
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM Badges")
+        conn.commit()
+        conn.close()
+
+    def clear_all_tables(self):
+        self.clear_users_table()
+        self.clear_friends_table()
+        self.clear_user_games_table()
+        self.clear_user_groups_table()
+        self.clear_user_level_table()
+        self.clear_badges_table()

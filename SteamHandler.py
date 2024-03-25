@@ -16,10 +16,9 @@ class Steam:
             'user_inventory': {}, # will need to be addressed 
             #'user_groups': {},
             #'user_level': {},
-            'user_badges': {} # to be implemented
+            #'user_badges': {} # to be implemented
         }
         self.db_manager = Database.DatabaseManager('database.db')
-        self.db_achievements = Database.DatabaseManager('achievements.db')
         self.db_manager.create_tables()
 
     # OpenID
@@ -68,17 +67,17 @@ class Steam:
         return data
 
     def get_user_achievements_per_game(self, steamid, appid):
-        achievements = self.db_achievements.fetch_user_achievements(steamid, appid)
+        achievements = self.db_manager.fetch_user_achievements(steamid, appid)
         if achievements == []:
             response = requests.get(f"http://api.steampowered.com/ISteamUserStats/GetPlayerAchievements/v0001/?appid={appid}&key={self.STEAM_KEY}&steamid={steamid}")
-            data = response.json()
             try:
+                data = response.json()
                 string_appid = str(appid)
-                self.db_achievements.create_achievements_table(string_appid)
-                self.db_achievements.insert_achievements(steamid, appid, data)
+                self.db_manager.create_achievements_table(string_appid)
+                self.db_manager.insert_achievements(steamid, appid, data)
             except KeyError:
                 return "Profile is not public"
-            achievements = self.db_achievements.fetch_user_achievements(steamid, appid)
+            achievements = self.db_manager.fetch_user_achievements(steamid, appid)
             return achievements
         
         return achievements
@@ -98,8 +97,12 @@ class Steam:
         games = self.db_manager.fetch_user_owned_games(steamid)
         if games == []:
             response = requests.get(f"http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key={self.STEAM_KEY}&steamid={steamid}&include_appinfo=true&format=json")
-            data = response.json()['response']
-            self.db_manager.insert_user_owned_games(steamid, data)
+            try:
+                data = response.json()['response']
+                self.db_manager.insert_user_owned_games(steamid, data)
+            
+            except:
+                return "Profile is not public"
             games = self.db_manager.fetch_user_owned_games(steamid)
         return games
 
@@ -114,13 +117,12 @@ class Steam:
         return recently_played
 
     def get_global_achievement_percentage(self, appid):
-        global_percentage = self.db_achievements.fetch_achievement_percentages(appid)
+        global_percentage = self.db_manager.fetch_achievement_percentages(appid)
         if global_percentage == []:
             response = requests.get(f"http://api.steampowered.com/ISteamUserStats/GetGlobalAchievementPercentagesForApp/v0002/?gameid={appid}&format=json")
             data = response.json()
-            self.db_achievements.create_achievements_table(str(appid))
-            self.db_achievements.insert_global_achievements(appid, data)
-            global_percentage = self.db_achievements.fetch_achievement_percentages(appid)
+            self.db_manager.insert_global_achievements(appid, data)
+            global_percentage = self.db_manager.fetch_achievement_percentages(appid)
         return global_percentage
     
     def resolve_vanity_url(self, vanityurl):
@@ -194,21 +196,26 @@ class Steam:
     def get_user_steam_level(self, steamid):
         level = self.db_manager.fetch_user_level(steamid)
         if level == []:
-            response = requests.get(f"https://api.steampowered.com/IPlayerService/GetSteamLevel/v1?steamid={steamid}&key={self.STEAM_KEY}")
-            data = response.json()['response']
-            self.db_manager.insert_user_level(steamid, data)
+            self.get_user_badges(steamid)
+            # Api call is no longer necessary, user badge info include player level
+            # Calling user_badges will use api call from their to create table
+            # response = requests.get(f"https://api.steampowered.com/IPlayerService/GetSteamLevel/v1?steamid={steamid}&key={self.STEAM_KEY}")
+            # data = response.json()['response']
             level = self.db_manager.fetch_user_level(steamid)
         return level
     
     def get_user_badges(self, steamid):
-        if steamid in self.cache['user_badges']:
-            return self.cache['user_badges'][steamid]
-        
-        response = requests.get(f"https://api.steampowered.com/IPlayerService/GetBadges/v1?steamid={steamid}&key={self.STEAM_KEY}")
-        data = response.json()['response']
-        self.cache['user_badges'][steamid] = data
-        print(data)
-        return data
+        user_badges = self.db_manager.fetch_user_badges(steamid)
+        if user_badges == []:
+            response = requests.get(f"https://api.steampowered.com/IPlayerService/GetBadges/v1?steamid={steamid}&key={self.STEAM_KEY}")
+            try:
+                data = response.json()['response']
+                self.db_manager.insert_user_badges(steamid, data)
+                self.db_manager.insert_user_level(steamid, data)
+            except:
+                return "Profile is not public"
+            user_badges = self.db_manager.fetch_user_badges(steamid)
+        return user_badges
 
     def clear_cache(self):
         for cache_key in self.cache:
