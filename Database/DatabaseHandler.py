@@ -131,34 +131,12 @@ class DatabaseManager:
         conn.commit()
         conn.close()
        
-    def execute_query(self, query, params=None, fetchone=False):
+    def execute_query(self, query, values):
         conn = sqlite3.connect(self.database)
         cursor = conn.cursor()
-
-        if params:
-            cache_key = (query, tuple(params))
-        else:
-            cache_key = query
-
-        if cache_key in self.cache:
-            result = self.cache[cache_key]
-        else:
-            if params:
-                cursor.execute(query, params)
-            else:
-                cursor.execute(query)
-            
-            if fetchone:
-                result = cursor.fetchone()
-            else:
-                result = cursor.fetchall()
-
-            self.cache[cache_key] = result
-
+        cursor.execute(query, values)
         conn.commit()
         conn.close()
-
-        return result
 
     def insert_user_summary(self, reponse):
         for data in reponse["response"]["players"]:
@@ -447,9 +425,10 @@ class DatabaseManager:
                 return []
         
     def insert_achievements(self, steamid, appid, achievements):
+        exisiting_achievemnts = self.fetch_user_achievements(steamid, appid)
+        if exisiting_achievemnts != []:
+            return
         gameName = achievements['playerstats']['gameName']
-        conn = sqlite3.connect(self.database)
-        cursor = conn.cursor()
         for achievement in achievements['playerstats']['achievements']:
             values = [
                 steamid,
@@ -460,7 +439,7 @@ class DatabaseManager:
                 achievement['unlocktime']
             ]
             query = '''
-                INSERT OR REPLACE INTO Achievements (
+                INSERT INTO Achievements (
                     steamid,
                     appid,
                     gameName,
@@ -469,10 +448,7 @@ class DatabaseManager:
                     unlocktime
                 ) VALUES (?, ?, ?, ?, ?, ?)
             '''
-            cursor.execute(query, values)
-
-        conn.commit()
-        conn.close()
+            self.execute_query(query, values)
         
     def fetch_user_achievements(self, steamid, appid):
         cache_key = f"achievements_{steamid}_{appid}"
@@ -753,3 +729,7 @@ class DatabaseManager:
         self.clear_user_groups_table()
         self.clear_user_level_table()
         self.clear_badges_table()
+        
+    def clear_cache(self):
+        for cache_key in self.cache:
+            self.cache[cache_key] = {}

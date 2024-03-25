@@ -72,7 +72,7 @@ class Steam:
         if achievements == []:
             response = requests.get(f"http://api.steampowered.com/ISteamUserStats/GetPlayerAchievements/v0001/?appid={appid}&key={self.STEAM_KEY}&steamid={steamid}")
             try:
-                data = response.json()                
+                data = response.json()  
                 self.db_manager.insert_achievements(steamid, appid, data)
                 if data == self.db_manager.fetch_user_achievements(steamid, appid):
                     print("achievements success")
@@ -87,6 +87,7 @@ class Steam:
 
     def get_user_stats_for_game(self, steamid ,appid):
         stats_for_game = self.db_manager.fetch_user_achieved_achievements(steamid, appid)
+        stats_for_game = []
         if stats_for_game == []:
             # this api call may no longer be necessary as data is similar to user achievements beside not displaying
             # unlock time, some name changes, and some other information that I can leave out from a fetch call
