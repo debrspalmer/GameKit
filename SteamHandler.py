@@ -47,6 +47,8 @@ class Steam:
             # Make one request for all not cached steamids
             response = requests.get(f"http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key={self.STEAM_KEY}&steamids={','.join(not_cached_steamids)}")
             data = response.json()
+            if data["response"]["players"] == []:
+                return False
 
             # Update the cache with the new data
             for user in data["response"]["players"]:
@@ -64,7 +66,7 @@ class Steam:
 
         response = requests.get(f"http://api.steampowered.com/ISteamUser/GetFriendList/v0001/?key={self.STEAM_KEY}&steamid={steamid}&relationship=friend")
         if not "friendslist" in response.json():
-            print(response.json(), "Error getting friends data")
+            #print(response.json(), "Error getting friends data")
             return False
         friend_ids = [i['steamid'] for i in response.json()["friendslist"]["friends"]]
         data = self.get_user_summeries(friend_ids)
@@ -87,7 +89,11 @@ class Steam:
             return self.cache['user_stats_for_game'][cache_key]
         
         response = requests.get(f"http://api.steampowered.com/ISteamUserStats/GetUserStatsForGame/v0002/?appid={appid}&key={self.STEAM_KEY}&steamid={steamid}")
+        if response.status_code not in range(200,299):
+            return None
         data = response.json()
+        if data == {}:
+            return None
         self.cache['user_stats_for_game'][cache_key] = data
         return data
 
@@ -96,6 +102,8 @@ class Steam:
             return self.cache['user_owned_games'][steamid]
         
         response = requests.get(f"http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key={self.STEAM_KEY}&steamid={steamid}&include_appinfo=true&format=json")
+        if response.status_code not in range(200,299):
+            return None
         data = response.json()['response']
         self.cache['user_owned_games'][steamid] = data
         return data
@@ -103,14 +111,19 @@ class Steam:
     def get_user_recently_played(self, steamid,count):
         # Implement cache
         response = requests.get(f"http://api.steampowered.com/IPlayerService/GetRecentlyPlayedGames/v0001/?key={self.STEAM_KEY}&steamid={steamid}&count={count}&format=json")
-        return response.json()["friendslist"]
+        if response.status_code not in range(200,299):
+            return None
+        return response.json()["response"]
 
     def get_global_achievement_percentage(self, appid):
         if appid in self.cache['game_global_achievement']:
             return self.cache['game_global_achievement'][appid]
         
-        response = requests.get(f"http://api.steampowered.com/ISteamUserStats/GetGlobalAchievementPercentagesForApp/v0002/?gameid={appid}&format=xml")
-        data = response.json()['response']
+        response = requests.get(f"http://api.steampowered.com/ISteamUserStats/GetGlobalAchievementPercentagesForApp/v0002/?gameid={appid}&format=json")
+        data = response.json()
+        if data == {}:
+            return None
+        data = data['achievementpercentages']
         self.cache['game_global_achievement'][appid] = data
         return data
     
@@ -147,16 +160,16 @@ class Steam:
             return self.cache['app_news'][appid]
         
         response = requests.get(f"http://api.steampowered.com/ISteamNews/GetNewsForApp/v0002/?appid={appid}&count={count}&maxlength={maxlength}&format=json")
-        data = response.json()['response']
+        data = response.json()['appnews']
         self.cache['app_news'][appid] = data
         return data
 
     def get_user_inventory(self, steamid):
-        if appid in self.cache['user_inventory']:
+        if steamid in self.cache['user_inventory']:
             return self.cache['user_inventory'][steamid]
         
         response = requests.get(f"https://steamcommunity.com/inventory/{steamid}/440/2")
-        data = response.json()['response']
+        data = response.json()['assets']
         self.cache['user_inventory'][steamid] = data
         return data
 
