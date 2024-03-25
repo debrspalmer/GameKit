@@ -177,11 +177,11 @@ class Steam:
         return data
 
     # This function has some sort of bug
-    def get_user_inventory(self, steamid):
+    def get_user_inventory(self, steamid, appid):
         # if appid in self.cache['user_inventory']:
         #     return self.cache['user_inventory'][steamid]
         
-        response = requests.get(f"https://steamcommunity.com/inventory/{steamid}/440/2")
+        response = requests.get(f"https://steamcommunity.com/inventory/{steamid}/{appid}/2")
         data = response.json()
         #data = response.json()['response']
         self.cache['user_inventory'][steamid] = data
