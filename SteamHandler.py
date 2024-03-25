@@ -42,7 +42,7 @@ class Steam:
         result = {}
 
         # Identify which steamids are not in the cache
-        not_cached_steamids = [steamid for steamid in steamids if steamid not in self.db_manager.fetch_user(steamid)]
+        not_cached_steamids = [steamid for steamid in steamids if steamid not in self.db_manager.fetch_user_summaries(steamid)]
         if not_cached_steamids:
             # Make one request for all not cached steamids
             response = requests.get(f"http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key={self.STEAM_KEY}&steamids={','.join(not_cached_steamids)}")
@@ -52,6 +52,7 @@ class Steam:
         # Retrieve data from cache for all steamids
         for steamid in steamids:
             result[steamid] = self.db_manager.fetch_user(steamid)
+        
         return result
 
     def get_user_friend_list(self, steamid):
@@ -71,10 +72,12 @@ class Steam:
         if achievements == []:
             response = requests.get(f"http://api.steampowered.com/ISteamUserStats/GetPlayerAchievements/v0001/?appid={appid}&key={self.STEAM_KEY}&steamid={steamid}")
             try:
-                data = response.json()
-                string_appid = str(appid)
-                self.db_manager.create_achievements_table(string_appid)
+                data = response.json()                
                 self.db_manager.insert_achievements(steamid, appid, data)
+                if data == self.db_manager.fetch_user_achievements(steamid, appid):
+                    print("achievements success")
+                else:
+                    print("failure achievements")
             except KeyError:
                 return "Profile is not public"
             achievements = self.db_manager.fetch_user_achievements(steamid, appid)
@@ -83,14 +86,18 @@ class Steam:
         return achievements
 
     def get_user_stats_for_game(self, steamid ,appid):
-        stats_for_game = self.db_achievements.fetch_user_achieved_achievements(steamid, appid)
+        stats_for_game = self.db_manager.fetch_user_achieved_achievements(steamid, appid)
         if stats_for_game == []:
             # this api call may no longer be necessary as data is similar to user achievements beside not displaying
             # unlock time, some name changes, and some other information that I can leave out from a fetch call
-            # response = requests.get(f"http://api.steampowered.com/ISteamUserStats/GetUserStatsForGame/v0002/?appid={appid}&key={self.STEAM_KEY}&steamid={steamid}")
-            # data = response.json()
+            response = requests.get(f"http://api.steampowered.com/ISteamUserStats/GetUserStatsForGame/v0002/?appid={appid}&key={self.STEAM_KEY}&steamid={steamid}")
+            data = response.json()
             self.get_user_achievements_per_game(steamid, appid)
-            stats_for_game = self.db_achievements.fetch_user_achieved_achievements(steamid, appid)
+            stats_for_game = self.db_manager.fetch_user_achieved_achievements(steamid, appid)
+            if data == stats_for_game:
+                print("succes stats for game")
+            else:
+                print("failure stats for game")
         return stats_for_game
 
     def get_user_owned_games(self, steamid):
@@ -123,6 +130,10 @@ class Steam:
             data = response.json()
             self.db_manager.insert_global_achievements(appid, data)
             global_percentage = self.db_manager.fetch_achievement_percentages(appid)
+            if data == global_percentage:
+                print("success global percentage")
+            else:
+                print("failure global")
         return global_percentage
     
     def resolve_vanity_url(self, vanityurl):

@@ -52,7 +52,8 @@ def user(steamid):
     #Steam.get_user_inventory(steamid)
     # Steam.get_user_recently_played(steamid, 10)
     # Steam.get_user_group_list(steamid)
-    # Steam.get_global_achievement_percentage(1245620)
+    #Steam.get_global_achievement_percentage(1245620)
+    #Steam.get_user_achievements_per_game(steamid, 1245620)
     # Steam.get_user_steam_level(steamid)
     # Steam.get_user_badges(steamid)
     return render_template("UserPage.html", user=Steam.get_user_summeries([steamid])[steamid], steamid = steamid)
@@ -73,14 +74,16 @@ def game_list(steamid):
 
 @app.route("/api/friends")
 def game_api():
-    try:
-        steamid = request.args.get('steamid')
-        return Steam.get_user_friend_list(steamid)
-    except:
+    steamid = request.args.get('steamid')
+    data = Steam.get_user_friend_list(steamid)
+    if data == False:
         return Response(
         "Data is Private",
         status=401,
     )
+    else:
+        return data
+        
     
 
 @app.route("/api/games")

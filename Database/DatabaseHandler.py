@@ -37,7 +37,13 @@ class DatabaseManager:
                 realname TEXT,
                 primaryclanid TEXT,
                 timecreated INTEGER,
-                personastateflags INTEGER
+                personastateflags INTEGER,
+                gameextrainfo TEXT,
+                gameid TEXT,
+                lobbysteamid TEXT,
+                loccountrycode TEXT,
+                locstatecode TEXT,
+                loccityid INTEGER
             )
         ''')
 
@@ -109,38 +115,27 @@ class DatabaseManager:
             )
         ''')
         
-        conn.commit()
-        conn.close()
-     
-    def create_achievements_table(self, appid):
-        
-        appid = appid.replace(" ", "_").replace("'", "").replace('"', '')
-
-        query = '''
-            CREATE TABLE IF NOT EXISTS "{}_achievements" (
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS Achievements (
                 id INTEGER PRIMARY KEY,
                 steamid TEXT,
                 appid INTEGER,
                 gameName TEXT,
                 apiname TEXT,
                 achieved INTEGER,
-                unlocktime INTEGER
+                unlocktime INTEGER,
+                FOREIGN KEY (steamid) REFERENCES users(steamid)
             )
-        '''.format(appid)
-
-        conn = sqlite3.connect(self.database)
-        cursor = conn.cursor()
-        cursor.execute(query)
+        ''')
+        
         conn.commit()
         conn.close()
-           
+       
     def execute_query(self, query, params=None, fetchone=False):
-        # Execute query and cache the result if needed
         conn = sqlite3.connect(self.database)
         cursor = conn.cursor()
 
         if params:
-            # Use the query and parameters as the cache key
             cache_key = (query, tuple(params))
         else:
             cache_key = query
@@ -188,7 +183,13 @@ class DatabaseManager:
                     data['realname'] if 'realname' in data else '',
                     data['primaryclanid'] if 'primaryclanid' in data else '',
                     data['timecreated'] if 'timecreated' in data else '',
-                    data['personastateflags'] if 'personastateflags' in data else ''
+                    data['personastateflags'] if 'personastateflags' in data else '',
+                    data['gameextrainfo'] if 'gameextrainfo' in data else '',
+                    data['gameid'] if 'gameid' in data else '',
+                    data['lobbysteamid'] if 'lobbysteamid' in data else '',
+                    data['loccountrycode'] if 'loccountrycode' in data else '',
+                    data['locstatecode'] if 'locstatecode' in data else '',
+                    data['loccityid'] if 'loccityid' in data else ''
                 ]
 
                 # Insert user summary data into the database
@@ -209,10 +210,36 @@ class DatabaseManager:
                         realname,
                         primaryclanid, 
                         timecreated, 
-                        personastateflags
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        personastateflags,
+                        gameextrainfo,
+                        gameid,
+                        lobbysteamid,
+                        loccountrycode,
+                        locstatecode,
+                        loccityid
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 '''
                 self.execute_query(query, values)
+
+    def fetch_user_summaries(self, steamid):
+        if steamid in self.cache['user_summaries']:
+            return self.cache['user_summaries']
+
+        query = "SELECT * FROM Users WHERE steamid = ?"
+        conn = sqlite3.connect(self.database)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        cursor.execute(query, (steamid,))
+        user = cursor.fetchone()
+        conn.close()
+
+        if user:
+            user = dict(user)
+            user = {column_name: value for column_name, value in user.items() if value != ''}
+            self.cache['user_summaries'][steamid] = user
+            return user
+        else:
+            return []
 
     def fetch_user(self, steamid):
         if steamid in self.cache['user_summaries']:
@@ -223,13 +250,14 @@ class DatabaseManager:
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
         cursor.execute(query, (steamid,))
-        result = cursor.fetchone()
+        user = cursor.fetchone()
         conn.close()
 
-        if result:
-            result = dict(result)
-            self.cache['user_summaries'][steamid] = result
-            return result
+        if user:
+            user = dict(user)
+            user = {column_name: value for column_name, value in user.items() if value != ''}
+            self.cache['user_summaries'][steamid] = user
+            return user
         else:
             return []
         
@@ -420,81 +448,52 @@ class DatabaseManager:
         
     def insert_achievements(self, steamid, appid, achievements):
         gameName = achievements['playerstats']['gameName']
-        string_appid = str(appid)
-        existing_user = self.fetch_user_achievements(steamid, string_appid)
-        if existing_user != []:
-            return
-        else:
-            conn = sqlite3.connect(self.database)
-            cursor = conn.cursor()
-            for achievement in achievements['playerstats']['achievements']:
-                values = [
+        conn = sqlite3.connect(self.database)
+        cursor = conn.cursor()
+        for achievement in achievements['playerstats']['achievements']:
+            values = [
+                steamid,
+                appid,
+                gameName,
+                achievement['apiname'],
+                achievement['achieved'],
+                achievement['unlocktime']
+            ]
+            query = '''
+                INSERT OR REPLACE INTO Achievements (
                     steamid,
                     appid,
                     gameName,
-                    achievement['apiname'],
-                    achievement['achieved'],
-                    achievement['unlocktime']
-                ]
-                query = '''
-                    INSERT OR REPLACE INTO "{}_achievements" (
-                        steamid,
-                        appid,
-                        gameName,
-                        apiname,
-                        achieved,
-                        unlocktime
-                    ) VALUES (?, ?, ?, ?, ?, ?)
-                '''.format(string_appid.replace(" ", "_").replace("'", "").replace('"', ''))
+                    apiname,
+                    achieved,
+                    unlocktime
+                ) VALUES (?, ?, ?, ?, ?, ?)
+            '''
+            cursor.execute(query, values)
 
-                cursor.execute(query, values)
-
-            conn.commit()
-            conn.close()
+        conn.commit()
+        conn.close()
         
     def fetch_user_achievements(self, steamid, appid):
-        string_appid = str(appid)
-        cache_key = f"{steamid}_{string_appid}"
-        
-        if 'user_achievements' in self.cache and cache_key in self.cache['user_achievements']:
+        cache_key = f"achievements_{steamid}_{appid}"
+        if cache_key in self.cache['user_achievements']:
             return self.cache['user_achievements'][cache_key]
 
+        query = "SELECT gameName, apiname, achieved, unlocktime \
+            FROM Achievements WHERE steamid = ? AND appid = ?"
         conn = sqlite3.connect(self.database)
+        conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
-
-        # Check if the table exists
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name=?", (f"{string_appid}_achievements",))
-        table_exists = cursor.fetchone() is not None
-
-        if not table_exists:
-            conn.close()
-            return []
-        query = '''
-            SELECT gameName, apiname, achieved, unlocktime
-            FROM "{}_achievements"
-            WHERE steamid = ? AND appid = ?
-        '''.format(string_appid.replace(" ", "_").replace("'", "").replace('"', ''))
-
-        cursor.execute(query, (steamid, string_appid))
-        rows = cursor.fetchall()
-
-        achievements = []
-        gameName = None
-        for row in rows:
-            gameName = row[0]
-            achievement = {
-                'apiname': row[1],
-                'achieved': row[2],
-                'unlocktime': row[3]
-            }
-            achievements.append(achievement)
-
+        cursor.execute(query, (steamid, appid))
+        result = cursor.fetchall()
         conn.close()
-        if 'user_achievements' not in self.cache:
-            self.cache['user_achievements'] = {}
 
-        if achievements:
-            self.cache['user_achievements'][cache_key] = {
+        if result:
+            achievements = [dict(row) for row in result]
+            gameName = achievements[0]['gameName']
+            for achievement in achievements:
+                achievement.pop('gameName', None)
+            achievements = {
                 'playerstats': {
                     'steamID': steamid,
                     'gameName': gameName,
@@ -502,82 +501,42 @@ class DatabaseManager:
                     'success': True
                 }
             }
+            
+            self.cache['user_achievements'][cache_key] = achievements
+            return achievements
         else:
             return []
-
-        return self.cache['user_achievements'][cache_key]
     
     def fetch_user_achieved_achievements(self, steamid, appid):
-        string_appid = str(appid)
-        cache_key = f"{steamid}_{string_appid}"
-
+        cache_key = f"achieved_achievements_{steamid}_{appid}"
         if cache_key in self.cache['user_achieved_achievements']:
             return self.cache['user_achieved_achievements'][cache_key]
 
+        query = "SELECT gameName, apiname AS name, achieved \
+            FROM Achievements WHERE steamid = ? AND appid = ? AND achieved = 1"
         conn = sqlite3.connect(self.database)
+        conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
-
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name=?", (f"{string_appid}_achievements",))
-        table_exists = cursor.fetchone() is not None
-
-        if not table_exists:
-            conn.close()
-            return []
-
-        query = '''
-            SELECT apiname, achieved
-            FROM "{}_achievements"
-            WHERE steamid == ? AND appid == ? AND achieved == 1
-        '''.format(string_appid.replace(" ", "_").replace("'", "").replace('"', ''))
-
-        cursor.execute(query, (steamid, string_appid))
-        rows = cursor.fetchall()
-
-        achievements = []
-        gameName = None  # Initialize gameName to None
-        for row in rows:
-            achievement = {
-                'name': row[0], 
-                'achieved': row[1]
-            }
-            achievements.append(achievement)
-
-            if gameName is None:
-                gameName_query = '''
-                    SELECT gameName
-                    FROM "{}_achievements"
-                    WHERE apiname == ? AND steamid == ? AND appid == ?
-                    LIMIT 1
-                '''.format(string_appid.replace(" ", "_").replace("'", "").replace('"', ''))
-                cursor.execute(gameName_query, (row[0], steamid, string_appid))
-                gameName_row = cursor.fetchone()
-                if gameName_row:
-                    gameName = gameName_row[0]
-
+        cursor.execute(query, (steamid, appid))
+        result = cursor.fetchall()
         conn.close()
 
-        result = {
-            'playerstats': {
-                'steamID': steamid,
-                'gameName': gameName,
-                'achievements': achievements
+        if result:
+            achievements = [dict(row) for row in result]
+            gameName = achievements[0]['gameName']
+            for achievement in achievements:
+                achievement.pop('gameName', None)
+            achievements = {
+                'playerstats': {
+                    'steamID': steamid,
+                    'gameName': gameName,
+                    'achievements': achievements
+                }
             }
-        }
-
-        if 'user_achieved_achievements' not in self.cache:
-            self.cache['user_achieved_achievements'] = {}
-
-        self.cache['user_achieved_achievements'][cache_key] = result
-
-        formatted_result = {
-            'playerstats': {
-                'steamID': result['playerstats']['steamID'],
-                'gameName': result['playerstats']['gameName'],
-                'achievements': [{'name': achievement['name'], 'achieved': achievement['achieved']} for achievement in result['playerstats']['achievements'] if achievement['achieved'] == 1]
-            }
-        }
-
-        return formatted_result
+            self.cache['user_achieved_achievements'][cache_key] = achievements
+            return achievements
+        else:
+            return []
     
     def insert_user_groups(self, steamid, groups):
         existing_group = self.fetch_user_groups(steamid)
@@ -718,46 +677,76 @@ class DatabaseManager:
     def clear_users_table(self):
         conn = sqlite3.connect(self.database)
         cursor = conn.cursor()
-        cursor.execute("DELETE FROM Users")
+        query = "DELETE FROM Users"
+        cursor.execute(query)
         conn.commit()
         conn.close()
 
     def clear_friends_table(self):
         conn = sqlite3.connect(self.database)
         cursor = conn.cursor()
-        cursor.execute("DELETE FROM Friends")
+        query = "DELETE FROM Friends"
+        cursor.execute(query)
         conn.commit()
         conn.close()
 
     def clear_user_games_table(self):
         conn = sqlite3.connect(self.database)
         cursor = conn.cursor()
-        cursor.execute("DELETE FROM UserGames")
+        query = "DELETE FROM UserGames"
+        cursor.execute(query)
         conn.commit()
         conn.close()
 
     def clear_user_groups_table(self):
         conn = sqlite3.connect(self.database)
         cursor = conn.cursor()
-        cursor.execute("DELETE FROM UserGroups")
+        query = "DELETE FROM UserGroups"
+        cursor.execute(query)
         conn.commit()
         conn.close()
 
     def clear_user_level_table(self):
         conn = sqlite3.connect(self.database)
         cursor = conn.cursor()
-        cursor.execute("DELETE FROM UserLevel")
+        query = "DELETE FROM UserLevel"
+        cursor.execute(query)
         conn.commit()
         conn.close()
 
     def clear_badges_table(self):
         conn = sqlite3.connect(self.database)
         cursor = conn.cursor()
-        cursor.execute("DELETE FROM Badges")
+        query = "DELETE FROM Badges"
+        cursor.execute(query)
+        conn.commit()
+        conn.close()
+
+    def clear_achievement_percentages_table(self):
+        conn = sqlite3.connect(self.database)
+        cursor = conn.cursor()
+        query = "DELETE FROM AchievementPercentages"
+        cursor.execute(query)
+        conn.commit()
+        conn.close()
+
+    def clear_achievements_table(self):
+        conn = sqlite3.connect(self.database)
+        cursor = conn.cursor()
+        query = "DELETE FROM Achievements"
+        cursor.execute(query)
         conn.commit()
         conn.close()
 
     def clear_all_tables(self):
+        self.clear_users_table()
+        self.clear_friends_table()
+        self.clear_user_games_table()
+        self.clear_user_groups_table()
+        self.clear_user_level_table()
+        self.clear_badges_table()
+        self.clear_achievement_percentages_table()
+        self.clear_achievements_table()
         self.clear_users_table()
         self.clear_friends_table()
         self.clear_user_games_table()
