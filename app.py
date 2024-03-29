@@ -1,11 +1,14 @@
 import requests, os, random, SteamHandler
 from json import dumps
 from flask import Flask, Response, render_template, redirect, request, send_from_directory
+from flask_apscheduler import APScheduler
+
 app = Flask(__name__)
+scheduler = APScheduler()
 
 Steam = SteamHandler.Steam(os.environ.get('STEAM_KEY', 'Steam_api_key'))
 web_url = os.environ.get('WEB_URL', 'web_url')
-
+production = os.environ.get('PRODUCTION', False)
 
 @app.route('/')
 def default():
@@ -101,5 +104,47 @@ def friend_api():
 def send_report(path):
     return send_from_directory('templates/javascript', path)
 
+
+@scheduler.task('interval', id='clear_cache', hours=1)
+def clear_cache():
+    Steam.db_manager.clear_cache()
+
+@scheduler.task('interval', id='clear_users_table', days=7)
+def clear_users_table():
+    Steam.db_manager.clear_users_table()
+
+@scheduler.task('interval', id='clear_friends_table', days=7)
+def clear_friends_table():
+    Steam.db_manager.clear_friends_table()
+
+@scheduler.task('interval', id='clear_user_games_table', days=2)
+def clear_user_games_table():
+    Steam.db_manager.clear_user_games_table()
+
+@scheduler.task('interval', id='clear_user_groups_table', days=7)
+def clear_user_groups_table():
+    Steam.db_manager.clear_user_groups_table()
+
+@scheduler.task('interval', id='clear_user_level_table', days=7)
+def clear_user_level_table():
+    Steam.db_manager.clear_user_level_table()
+
+@scheduler.task('interval', id='clear_badges_table', days=7)
+def clear_badges_table():
+    Steam.db_manager.clear_badges_table()
+
+@scheduler.task('interval', id='clear_achievement_percentages_table', days=1)
+def clear_achievement_percentages_table():
+    Steam.db_manager.clear_achievement_percentages_table()
+
+@scheduler.task('interval', id='clear_achievements_table', days=1)
+def clear_achievements_table():
+    Steam.db_manager.clear_achievements_table()
+
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=8000, debug = True)
+    scheduler.init_app(app)
+    scheduler.start()  
+    if production:
+        app.run(host="0.0.0.0")
+    else: 
+        app.run(host="0.0.0.0", port=8000, debug = True)

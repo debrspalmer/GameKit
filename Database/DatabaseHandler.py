@@ -731,5 +731,6 @@ class DatabaseManager:
         self.clear_badges_table()
         
     def clear_cache(self):
+        print("Clearing Cache")
         for cache_key in self.cache:
             self.cache[cache_key] = {}

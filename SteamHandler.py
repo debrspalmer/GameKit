@@ -20,7 +20,6 @@ class Steam:
         }
         self.db_manager = Database.DatabaseManager('database.db')
         self.db_manager.create_tables()
-
     # OpenID
     def get_openid_url(self,web_url):
         steam_openid_url = 'https://steamcommunity.com/openid/login'
