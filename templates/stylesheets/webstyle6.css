@@ -31,8 +31,8 @@ navbar {
 	background: #E8E8E8;
 	display: flex;
 	width: 100%;
-	height: 90%;
-	margin: 0px;
+	height: 130%;
+	margin: auto;
 	padding: 10px;
 }
 
@@ -76,12 +76,12 @@ navbar {
 }
 
 .grid-container {
-	height: 400px;
-  display: grid;
-  grid-template-columns: auto auto;
-  gap: 30px;
-  background-color: #E8E8E8;
-  padding: 30px;
+	height: 500px;
+	display: grid;
+	grid-template-columns: auto auto;
+	gap: 30px;
+	background-color: #E8E8E8;
+	padding: 30px;
 }
 
 .grid-container > div {
@@ -97,6 +97,41 @@ navbar {
 	grid-column-end: 3;
 }
 
+.GameQuery {
+	width: 85%;
+	float: left;
+	gap: 10px;
+	line-height: 175%;
+}
+
+.leftdivision
+{
+    float: left;
+	padding-left: 25px;
+	padding-top: 15px;
+}
+   
+.middledivision
+{
+    float: left;
+	padding-left: 35px;
+	padding-top: 15px;
+}
+
+.rightdivision
+{
+    float: left;
+	padding-left: 35px;
+	padding-top: 15px;
+}
+
+.box{ 
+    width: 1547px; 
+    height: 200px; 
+    border: 2px #E8E8E8; 
+	background: #d9d9d9;
+} 
+
 .friends-game-library {
 	width: 15%;
 	float: right;
@@ -107,7 +142,7 @@ navbar {
 .friends-list {
 	padding: 15px;
 	background: #d9d9d9;
-	width: 300px;
+	width: 275px;
 	height: 350px;
 	line-height: 200%;
 	border: 2px #E8E8E8;
@@ -116,7 +151,7 @@ navbar {
 .game-library {
 	padding: 15px;
 	background: #d9d9d9;
-	width: 300px;
+	width: 275px;
 	height: 350px;
 	line-height: 200%;
 	border: 2px #E8E8E8;
@@ -197,10 +232,10 @@ navbar {
   display: block;
 }
 
-html, body {
+html {
     height: 100%;
     width: 100%;
-	overflow: hidden;
+	overflow: scroll;
     background-color: linear-gradient(180deg, var(--gpStoreDarkGrey) 0%, var(--gpStoreDarkerGrey) 80%);
 }
 h1 {
@@ -209,7 +244,7 @@ h1 {
     color: #4e697d;
 }
 
-h1.userstats {
+h1.userstats, h1.userdatasearch {
 	padding-left: 25px;
 }
 
@@ -227,7 +262,11 @@ h4 {
 
 p {
     font-size: 18px;
-    color: #A7BACC;
+    color: #7e9bb6;
+}
+
+p.datahere {
+	padding: 30px;
 }
 
 ol, ul {

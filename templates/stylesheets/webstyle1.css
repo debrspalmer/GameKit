@@ -30,8 +30,8 @@ navbar {
 .container {
 	background: #E8E8E8;
 	display: flex;
-	width: 1920px;
-	height: 1180px;
+	width: 100%;
+	height: 130%;
 	margin: auto;
 	padding: 10px;
 }
@@ -125,7 +125,7 @@ navbar {
 .friends-list {
 	padding: 15px;
 	background: #d9d9d9;
-	width: 300px;
+	width: 275px;
 	height: 350px;
 	line-height: 200%;
 	border: 2px #E8E8E8;
@@ -134,7 +134,7 @@ navbar {
 .game-library {
 	padding: 15px;
 	background: #d9d9d9;
-	width: 300px;
+	width: 275px;
 	height: 350px;
 	line-height: 200%;
 	border: 2px #E8E8E8;
@@ -169,7 +169,7 @@ navbar {
 }
 
 .box{ 
-    width: 1560px; 
+    width: 1547px; 
     height: 200px; 
     border: 2px #E8E8E8; 
 	background: #d9d9d9;
@@ -245,7 +245,7 @@ navbar {
   display: block;
 }
 
-html, body {
+html {
     height: 100%;
     width: 100%;
 	overflow: scroll;
