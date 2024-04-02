@@ -4,6 +4,8 @@ services:
   ImgWebPy:
     image: ghcr.io/buttercheetah/gamekit:latest
     restart: unless-stopped
+    volumes:
+      - ./db:/python-docker/db
     environment:
       - STEAM_KEY=<changeme>
       - WEB_URL=<changeme>
