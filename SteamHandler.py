@@ -70,6 +70,8 @@ class Steam:
         achievements = self.db_manager.fetch_user_achievements(steamid, appid)
         if achievements == []:
             response = requests.get(f"http://api.steampowered.com/ISteamUserStats/GetPlayerAchievements/v0001/?appid={appid}&key={self.STEAM_KEY}&steamid={steamid}")
+            if response.status_code not in range(200,299):
+                return []
             try:
                 data = response.json()  
                 self.db_manager.insert_achievements(steamid, appid, data)
@@ -91,8 +93,10 @@ class Steam:
             # this api call may no longer be necessary as data is similar to user achievements beside not displaying
             # unlock time, some name changes, and some other information that I can leave out from a fetch call
             response = requests.get(f"http://api.steampowered.com/ISteamUserStats/GetUserStatsForGame/v0002/?appid={appid}&key={self.STEAM_KEY}&steamid={steamid}")
+            if response.status_code not in range(200,299):
+                return []
             data = response.json()
-            self.get_user_achievements_per_game(steamid, appid)
+            self.get_user_achievements_per_game(steamid, appid) 
             stats_for_game = self.db_manager.fetch_user_achieved_achievements(steamid, appid)
             if data == stats_for_game:
                 print("succes stats for game")
@@ -104,6 +108,8 @@ class Steam:
         games = self.db_manager.fetch_user_owned_games(steamid)
         if games == []:
             response = requests.get(f"http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key={self.STEAM_KEY}&steamid={steamid}&include_appinfo=true&format=json")
+            if response.status_code not in range(200,299):
+                return []
             try:
                 data = response.json()['response']
                 self.db_manager.insert_user_owned_games(steamid, data)
@@ -127,6 +133,8 @@ class Steam:
         global_percentage = self.db_manager.fetch_achievement_percentages(appid)
         if global_percentage == []:
             response = requests.get(f"http://api.steampowered.com/ISteamUserStats/GetGlobalAchievementPercentagesForApp/v0002/?gameid={appid}&format=json")
+            if response.status_code not in range(200,299):
+                return []
             data = response.json()
             self.db_manager.insert_global_achievements(appid, data)
             global_percentage = self.db_manager.fetch_achievement_percentages(appid)
@@ -139,6 +147,8 @@ class Steam:
     def resolve_vanity_url(self, vanityurl):
         vanityurl = str(vanityurl).replace("https://steamcommunity.com/id/", "").replace("/", "")
         response = requests.get(f"http://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/?key={self.STEAM_KEY}&vanityurl={vanityurl}")
+        if response.status_code not in range(200,299):
+                return 0
         return response.json()["response"]
 
     
@@ -171,8 +181,9 @@ class Steam:
     def get_app_news(self, appid,count=3,maxlength=300):
         response = requests.get(f"http://api.steampowered.com/ISteamNews/GetNewsForApp/v0002/?appid={appid}&count={count}&maxlength={maxlength}&format=json")
         # data = response.json()['response']
-        data = response.json()
-        self.cache['app_news'][appid] = data
+        if response.status_code not in range(200,299):
+                return []
+        data = response.json()['appnews']
         return data
 
     # This function has some sort of bug
@@ -181,6 +192,8 @@ class Steam:
         #     return self.cache['user_inventory'][steamid]
         
         response = requests.get(f"https://steamcommunity.com/inventory/{steamid}/{appid}/2")
+        if response.status_code not in range(200,299):
+                return []
         data = response.json()
         #data = response.json()['response']
         self.cache['user_inventory'][steamid] = data
@@ -188,12 +201,13 @@ class Steam:
         return data
 
     def get_user_group_list(self, steamid):
-        # steamid hard coded here for testing, should be removed 
-        steamid = '76561198180337238'
         groups = self.db_manager.fetch_user_groups(steamid)
         if groups == []:
             response = requests.get(f"https://api.steampowered.com/ISteamUser/GetUserGroupList/v1?steamid={steamid}&key={self.STEAM_KEY}")
+            if response.status_code not in range(200,299):
+                return []
             data = response.json()['response']
+            print('\n\n\n\n\n',data)
             self.db_manager.insert_user_groups(steamid, data)
             groups = self.db_manager.fetch_user_groups(steamid)
             return groups
@@ -201,6 +215,8 @@ class Steam:
     
     def get_number_of_players_in_game(self, appid):
         response = requests.get(f"https://api.steampowered.com/ISteamUserStats/GetNumberOfCurrentPlayers/v1?appid={appid}")
+        if response.status_code not in range(200,299):
+                return []
         data = response.json()['response']
         return data
 
@@ -219,6 +235,9 @@ class Steam:
         user_badges = self.db_manager.fetch_user_badges(steamid)
         if user_badges == []:
             response = requests.get(f"https://api.steampowered.com/IPlayerService/GetBadges/v1?steamid={steamid}&key={self.STEAM_KEY}")
+            print(response.json())
+            if response.status_code not in range(200,299):
+                return []
             try:
                 data = response.json()['response']
                 self.db_manager.insert_user_badges(steamid, data)

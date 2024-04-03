@@ -428,7 +428,11 @@ class DatabaseManager:
         exisiting_achievemnts = self.fetch_user_achievements(steamid, appid)
         if exisiting_achievemnts != []:
             return
-        gameName = achievements['playerstats']['gameName']
+        try:
+            gameName = achievements['playerstats']['gameName']
+        except:
+            print("game name not found!")
+            return
         for achievement in achievements['playerstats']['achievements']:
             values = [
                 steamid,
@@ -518,13 +522,11 @@ class DatabaseManager:
         existing_group = self.fetch_user_groups(steamid)
         if existing_group != []:
             return
-        
         for group in groups['groups']:
             values = [
                 steamid,
                 group['gid']
             ]
-        
             query = '''
                 INSERT INTO UserGroups (
                     steamid,
@@ -576,6 +578,7 @@ class DatabaseManager:
         self.execute_query(query, values)
         
     def fetch_user_level(self, steamid):
+        steamid = int(steamid)
         if steamid in self.cache['user_level']:
             return self.cache['user_level'][steamid]
         
