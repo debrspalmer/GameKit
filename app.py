@@ -12,7 +12,7 @@ production = os.environ.get('PRODUCTION', False)
 
 @app.route('/')
 def default():
-    return render_template("Search Page.html", web_url=web_url)
+    return render_template("Search_Page_Account.html", web_url=web_url)
 
 @app.route("/auth")
 def auth_with_steam():
@@ -34,6 +34,7 @@ def search():
         return redirect(f"{web_url}/user/{search_query}")
     else:
         vanitysearch = Steam.resolve_vanity_url(search_query)
+        print(vanitysearch)
         if vanitysearch['success'] == True:
             return redirect(f"{web_url}/user/{vanitysearch['steamid']}")
         else:
@@ -59,7 +60,7 @@ def user(steamid):
     Steam.get_user_stats_for_game(steamid, 1086940)
     Steam.get_user_steam_level(steamid)
     Steam.get_user_badges(steamid)
-    return render_template("UserPage.html", user=Steam.get_user_summeries([steamid])[steamid], steamid = steamid)
+    return render_template("User_Page.html", user=Steam.get_user_summeries([steamid])[steamid], steamid = steamid)
 @app.route('/user/<steamid>/friends')
 def friend_list(steamid):
     friends = Steam.get_user_friend_list(steamid)
@@ -101,9 +102,14 @@ def friend_api():
     )
 
 @app.route('/js/<path:path>')
-def send_report(path):
+def send_js(path):
     return send_from_directory('templates/javascript', path)
-
+@app.route('/stylesheets/<path:path>')
+def send_stylesheets(path):
+    return send_from_directory('templates/stylesheets', path)
+@app.route('/images/<path:path>')
+def send_images(path):
+    return send_from_directory('templates/images', path)
 
 @scheduler.task('interval', id='clear_cache', hours=1)
 def clear_cache():
@@ -147,4 +153,4 @@ if __name__ == '__main__':
     if production:
         app.run(host="0.0.0.0")
     else: 
-        app.run(host="0.0.0.0", port=8000, debug = True)
+        app.run(host="0.0.0.0", port=3000, debug = True)

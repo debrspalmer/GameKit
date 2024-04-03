@@ -1,0 +1,145 @@
+<!--
+This file is just for refrence, actual website is barebones with js to fill in data
+-->
+
+<!doctype html>
+<html lang="en-US">
+	<head>
+	 <link href="../stylesheets/webstyle1.css" rel="stylesheet" type="text/css">
+	 <meta charset="utf-8" />
+	 <meta name="viewport" content="width=device-width" />
+	 <title>wireframe2</title>
+	 <script src="/js/AccountAPIFunctions.js"></script>
+		<script>
+			window.addEventListener('load', function () {
+				loadFriends("{{ user['steamid'] }}");
+				loadGames("{{ user['steamid'] }}");
+			})
+
+		</script>
+	</head>	
+	
+	<body>
+		<nav>
+			<div class="logo"><img src="/images/GK_logo.png" alt="GameKit Logo"></div>
+			<div class="navbar">
+			  <a href="{{ web_url }}/auth">Your Profile</a>
+			  <div class="dropdown">
+				<button class="dropbtn">Dropdown
+				  <i class="fa fa-caret-down"></i>
+				</button>
+				<div class="dropdown-content">
+					<a href="../Search_Page_Account.html">Search For Accounts</a>
+					<a href="../About_Us.html">About Us</a>
+					<a href="../Contact_Us.html">Contact Us</a>
+					<a href="#LogOut">Log Out</a>
+				</div>
+			  </div>
+			</div>
+		</nav>
+		<div class="container">
+			<main>
+			<div class="user">
+				<div class="userdetails">
+					<p><div class="pfp"><img src="{{ user['avatarfull'] }}" alt="User's Profile Pic"></div></p>
+					<div class="name-bio">
+						<h1>{{ user['personaname'] }}</h1>
+						<p>{{ user['realname'] }}</p>
+						</div>
+				</div>
+				<h1 class="userstats">User Stats</h1>
+				<div class="grid-container">
+					<div class="item1">
+						<h2>Most Played Games</h2>
+						<div id="most_played_games">
+						<ol>
+							<li>Terraria</li>
+							<li>Ark Survival Evolved</li>
+							<li>The Elder Scrolls V: Skyrim</li>
+						</ol>
+						</div>
+					</div>
+					<div class="item2">
+						<h2>Favorite Games</h2>
+						<ol>
+							<li>The Elder Scrolls V: Skyrim</li>
+							<li>Apex Legends</li>
+							<li>Fallout: New Vegas</li>
+						</ol>
+					</div>
+					<div class="item3">
+						<h2>Rarest Achievements</h2>
+						<ol>
+							<li>Achievement</li>
+							<li>Achievement</li>
+							<li>Achievement</li>
+						</ol>
+					</div>
+					<div class="item4">
+						<h2>items for Sell/Trade</h2>
+						<ul>
+							<li>Item 1</li>
+							<li>Item 2</li>
+							<li>Item 3</li>
+						</ul>
+					</div>
+				</div>
+				<div class="GameQuery">
+				<h1 class="userdatasearch">User Data Search</h1>
+				<div class="leftdivision">
+					<label for="GameSelection">Game Selection</label>
+					<select id="GameSelection" name="GameSelection">
+					  <option value="Fallout 3">Fallout 3</option>
+						<option value="The Elder Scrolls">The Elder Scrolls</option>
+						<option value="Victoria II">Victoria II</option>
+						<option value="Game_Example_4">Game_Example_4</option>
+						<option value="Game_Example_5">Game_Example_5</option>
+					</select>
+				</div>
+				<div class="rightdivision">
+					<label for="DataSelection">What Data Are You Looking For?</label>
+					<select id="DataSelection" name="DataSelection">
+						<option value="Last_Played">Last Played</option>
+						<option value="Total_Achievements">Total Achievements</option>
+						<option value="Total_Playtime">Total Playtime</option>
+						<option value="Data_Example_4">Data_Example_4</option>
+						<option value="Data_Example_5">Data_Example_5</option>
+					</select>
+				</div>
+				<div class="databox">
+					<div class="box">
+						<p class="datahere">Data here</p>
+					</div> 
+				</div>
+				</div>
+			</div>
+			
+			<div class="friends-game-library">
+				<div class="friends-list">
+					<h1 class="centerText">Friends List</h1>
+					<div  id="friends_list">
+					 <ul>
+					  <li>Friend 1</li>
+					  <li>Friend 2</li>
+					  <li>Friend 3</li>
+					 </ul>
+					</div>
+				</div>
+				<div class="game-library">
+					<h1 class="centerText">Game Library</h1>
+					<div id="games_list">
+					 <ul>
+					  <li>Game 1</li>
+					  <li>Game 2</li>
+					  <li>Game 3</li>
+					 </ul>
+					</div>
+				</div>
+			</div>
+			</main>
+		</div>
+		<footer>
+			<p>Copyright 2024 GameKit & Co.</p>
+		</footer>
+	</body>
+</html>

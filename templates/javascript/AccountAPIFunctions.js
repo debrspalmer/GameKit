@@ -20,7 +20,7 @@ async function loadFriends(usteamid) {
                 const friend = data[steamid];
                 // Log or display the formatted output (avatar - personaname)
                 console.log(`${friend.avatar} - ${friend.personaname}`);
-                document.getElementById("friends_list").innerHTML += `<li><a href='/user/${steamid}'><img src=${friend.avatar}> - ${friend.personaname}</a></li>`;
+                document.getElementById("friends_list").innerHTML += `<li><a href='/user/${steamid}'>${friend.personaname}</a></li>`;
             }
         }
         document.getElementById("friends_list").innerHTML += `</ul>`;
@@ -49,19 +49,19 @@ async function loadGames(usteamid) {
             if (i == 10) { break; }
             const game = data['games'][gamedata];
             console.log(`http://media.steampowered.com/steamcommunity/public/images/apps/${game.appid}/${game.img_icon_url}.jpg - ${game.name}`);
-            document.getElementById("games_list").innerHTML += `<li><img src=http://media.steampowered.com/steamcommunity/public/images/apps/${game.appid}/${game.img_icon_url}.jpg> - ${game.name}</li>`;
+            document.getElementById("games_list").innerHTML += `<li>${game.name}</li>`;
         }
     document.getElementById("games_list").innerHTML += `</ul>`;
 
     const sortedGames = data['games'].sort((a, b) => b.playtime_forever - a.playtime_forever);
     // Display the top 10 most played games
-    document.getElementById("most_played_games").innerHTML = `<ul>`;
-    for (let i = 0; i < Math.min(10, sortedGames.length); i++) {
+    document.getElementById("most_played_games").innerHTML = `<ol>`;
+    for (let i = 0; i < Math.min(3, sortedGames.length); i++) {
         const game = sortedGames[i];
         console.log(`http://media.steampowered.com/steamcommunity/public/images/apps/${game.appid}/${game.img_icon_url}.jpg - ${game.name} - ${game.playtime_forever}`);
-        document.getElementById("most_played_games").innerHTML += `<li><img src=http://media.steampowered.com/steamcommunity/public/images/apps/${game.appid}/${game.img_icon_url}.jpg> - ${game.name} - ${Math.floor(game.playtime_forever/60)} hours</li>`;
+        document.getElementById("most_played_games").innerHTML += `<li>${Math.floor(game.playtime_forever/60)} hours - ${game.name}</li>`;
     }
-    document.getElementById("most_played_games").innerHTML += `</ul>`;
+    document.getElementById("most_played_games").innerHTML += `</ol>`;
     })
     .catch(error => {
         console.error('Error:', error);
