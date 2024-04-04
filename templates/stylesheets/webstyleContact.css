@@ -206,7 +206,7 @@ li.dropdown {
 html, body {
     height: 100%;
     width: 100%;
-	overflow: hidden;
+    overflow: hidden;
     background-color: linear-gradient(180deg, var(--gpStoreDarkGrey) 0%, var(--gpStoreDarkerGrey) 80%);
 }
 h1 {
@@ -241,7 +241,9 @@ ol, ul {
 }
 
 img {
-    width: 100%;
+  max-width: 100%;
+  min-width: 100px;
+  height:auto;
 }
 
 /* Style inputs with type="text", select elements and textareas */

@@ -57,7 +57,7 @@ navbar {
 	text-align: center;
 	width: 100%;
 	line-height: 50px;
-	border: 3px solid #000000;
+	border: 3px solid #E8E8E8;
 	padding-top: 0%;
 }
 
@@ -78,10 +78,17 @@ navbar {
 	line-height: 30px;
 }
 
-.column {
+.column1 {
   float: left;
   width: 40%;
   padding: 15px;
+}
+
+.column2 {
+  float: left;
+  width: 40%;
+  padding: 15px;
+  position: relative;
 }
 
 .row::after {
@@ -206,7 +213,7 @@ li.dropdown {
 html, body {
     height: 100%;
     width: 100%;
-	overflow: hidden;
+	  overflow: scroll;
     background-color: linear-gradient(180deg, var(--gpStoreDarkGrey) 0%, var(--gpStoreDarkerGrey) 80%);
 }
 h1 {
@@ -244,11 +251,35 @@ ol, ul {
 	list-style-position: inside;
 }
 
-img {
-    width: 100%;
+#img1 {
+  max-width: 100%;
+  min-width: 100px;
+  height:auto;
+}
+
+#img2 {
+  max-width: 100%;
+  min-width: 150px;
+  height:auto;
+}
+
+#img3 {
+  max-width: 100%;
+  min-width: 150px;
+  height:auto;
 }
 
 footer {
     text-align: center;
     color: #4e697d;
+}
+
+@media screen and (max-width: 400px) {
+	h2 {
+		font-size: .9em;
+	}
+	
+	.column2 {
+		left: 15%;
+	}
 }

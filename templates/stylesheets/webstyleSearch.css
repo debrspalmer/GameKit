@@ -46,18 +46,18 @@ navbar {
 }
 
 .pfp {
-	max-height: 13;
+	max-height: 13px;
 	max-width: 13%;
 }
 
-.main {
+main {
 	float: left;
 	margin-left: auto;
 	margin-right: auto;
 	text-align: center;
 	width: 100%;
 	line-height: 50px;
-	border: 3px solid #000000;
+	border: 3px solid #E8E8E8;
 	padding-top: 0%;
 }
 
@@ -70,15 +70,13 @@ navbar {
 	
 }
 
-.searchbar {
-     position: absolute;
-     top: 450px;
-     left: 555px;
+.search-bar {
+     position: relative;
+     overflow: hidden;
 }
 
 .searchbar input {
      height: 30px;
-     width: 800px;
 }
 
 /* Navbar container */
@@ -189,7 +187,9 @@ ol, ul {
 }
 
 img {
-    width: 100%;
+  max-width: 100%;
+  min-width: 100px;
+  height: auto;
 }
 
 footer {

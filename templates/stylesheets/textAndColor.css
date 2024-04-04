@@ -8,7 +8,7 @@
 html, body {
 	width: 100%;
 	height: 100%;
-	overflow: hidden;
+	overflow: scroll;
 	background-color: linear-gradient(180deg, var(--gpStoreDarkGrey) 0%, var(--gpStoreDarkerGrey) 80%);
 }
 
@@ -90,11 +90,37 @@ p {
 }
 
 img {
-    width: 100%;
+    max-width: 100%;
+	min-width: 100px;
+	height: auto;
 }
 
-#footer {
+#img2 {
+	height: 100%;
+}
+
+footer {
     text-align: center;
     color: #4e697d;
-	padding-top: 250px
+}
+
+@media screen and (max-width: 400px) {
+	
+	.container {
+		display: block;
+	}
+	
+	.main {
+		width: auto;
+	}
+	
+	.bg-pic {
+		min-width: 50%;
+		max-width: 100%;
+		max-height: 50%;
+	}
+	
+	#img2 {
+		min-width: 40%;
+	}
 }
