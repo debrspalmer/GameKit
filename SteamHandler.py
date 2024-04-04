@@ -69,8 +69,10 @@ class Steam:
     def get_user_achievements_per_game(self, steamid, appid):
         achievements = self.db_manager.fetch_user_achievements(steamid, appid)
         if achievements == []:
-            response = requests.get(f"http://api.steampowered.com/ISteamUserStats/GetPlayerAchievements/v0001/?appid={appid}&key={self.STEAM_KEY}&steamid={steamid}")
+            request_url = f"http://api.steampowered.com/ISteamUserStats/GetPlayerAchievements/v0001/?appid={appid}&key={self.STEAM_KEY}&steamid={steamid}"
+            response = requests.get(request_url)
             if response.status_code not in range(200,299):
+                print(request_url, '\nStatus code', response.status_code)
                 return []
             try:
                 data = response.json()  

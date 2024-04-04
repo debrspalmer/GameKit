@@ -53,13 +53,13 @@ def user(steamid):
     # Tempory implementation
     # will need to figure out after questions
     #Steam.get_user_inventory(steamid)
-    Steam.get_user_recently_played(steamid, 10)
-    Steam.get_user_group_list(steamid)
-    Steam.get_global_achievement_percentage(1086940)
-    Steam.get_user_achievements_per_game(steamid, 1086940)
-    Steam.get_user_stats_for_game(steamid, 1086940)
-    Steam.get_user_steam_level(steamid)
-    Steam.get_user_badges(steamid)
+    #Steam.get_user_recently_played(steamid, 10)
+    #Steam.get_user_group_list(steamid)
+    #Steam.get_global_achievement_percentage(1086940)
+    #Steam.get_user_achievements_per_game(steamid, 1086940)
+    #Steam.get_user_stats_for_game(steamid, 1086940)
+    #Steam.get_user_steam_level(steamid)
+    #Steam.get_user_badges(steamid)
     return render_template("User_Page.html", user=Steam.get_user_summeries([steamid])[steamid], steamid = steamid)
 @app.route('/user/<steamid>/friends')
 def friend_list(steamid):
@@ -89,7 +89,23 @@ def game_api():
         return data
         
     
-
+@app.route("/api/achievments")
+def achievments_api():
+    try:
+        steamid = request.args.get('steamid')
+        appid = request.args.get('appids')
+        appids = appid.split(',')
+        response = []
+        for appid in appids:
+            appachievment = Steam.get_user_achievements_per_game(steamid, appid)
+            response.append(appachievment)
+            print(appachievment,'\n\n\n')
+        return {'Response':response}
+    except:
+        return Response(
+        "Data is Private",
+        status=401,
+    )
 @app.route("/api/games")
 def friend_api():
     try:
