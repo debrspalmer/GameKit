@@ -12,13 +12,13 @@
 }
 
 nav {
-	height: 80px;
+	height: 140px;
 	width: 100%;
-	background: #989898;
+	background: #2b2734ef;
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	padding: 15px;
+	padding: 1.5%;
 }
 
 .searchbar {
@@ -30,18 +30,18 @@ navbar {
 }
 
 .container {
-	background: #E8E8E8;
+	background: #625c66ef;
 	display: flex;
 	width: 100%;
-	height: 90%;
+	height: 100%;
 	margin: 0px;
 	padding: 10px;
 }
 
 .logo {
-	max-height: 5%;
-	max-width: 5%;
-	padding-bottom: 60px;
+  padding-bottom: 7.5%;
+	max-height: 12%;
+	max-width: 12%;
 	justify-content: flex-start;
 }
 
@@ -54,10 +54,8 @@ navbar {
 	float: left;
 	margin-left: auto;
 	margin-right: auto;
-	text-align: center;
 	width: 100%;
 	line-height: 50px;
-	border: 3px solid #E8E8E8;
 	padding-top: 0%;
 }
 
@@ -65,30 +63,29 @@ navbar {
 	width: 85%;
 	display: grid;
 	float: left;
-	padding: 3%;
-	line-height: 38px;
+  padding-top: 3%;
+  padding-left: 7%;
+	line-height: 44px;
 }
 
 .info {
 	width: 85%;
 	display: grid;
 	float: center;
-	padding-left: none;
-	padding-top: 25px;
-	line-height: 30px;
+	padding-left: 5%;
+	padding-top: 2%;
+	line-height: 35px;
 }
 
-.column1 {
-  float: left;
-  width: 40%;
-  padding: 15px;
+.row {
+  padding-left: 3%;
 }
 
-.column2 {
+.column {
   float: left;
-  width: 40%;
-  padding: 15px;
-  position: relative;
+  padding-left: 5%;
+  width: 45%;
+  padding: 1%;
 }
 
 .row::after {
@@ -102,12 +99,12 @@ navbar {
 	display: grid;
 	grid-template-columns: auto auto;
 	gap: 30px;
-	background-color: #E8E8E8;
+	background: #625c66ef;
 	padding: 30px;
 }
 
 .grid-container > div {
-	background-color: #d9d9d9;
+	background: #625c66ef;
 	line-height: 175%;
 	text-align: left;
 }
@@ -142,15 +139,15 @@ li.dropdown {
 
 /* Navbar container */
 .navbar {
-  overflow: hidden;
-  background-color: #333;
+  overflow: auto;
+  background-color: #2722240f;
   font-family: 'Trebuchet MS', Verdana, Helvetica, sans-serif;
 }
 
 /* Links inside the navbar */
 .navbar a {
   float: left;
-  font-size: 16px;
+  font-size: 18px;
   color: white;
   text-align: center;
   padding: 14px 16px;
@@ -160,15 +157,15 @@ li.dropdown {
 /* The dropdown container */
 .dropdown {
   float: left;
-  overflow: hidden;
+  overflow: auto;
 }
 
 /* Dropdown button */
 .dropdown .dropbtn {
-  font-size: 16px;
+  font-size: 18px;
   border: none;
   outline: none;
-  color: white;
+  color: rgb(235, 229, 251);
   padding: 14px 16px;
   background-color: inherit;
   font-family: inherit; /* Important for vertical align on mobile phones */
@@ -177,14 +174,14 @@ li.dropdown {
 
 /* Add a red background color to navbar links on hover */
 .navbar a:hover, .dropdown:hover .dropbtn {
-  background-color: red;
+  background-color: rgb(191, 28, 28);
 }
 
 /* Dropdown content (hidden by default) */
 .dropdown-content {
   display: none;
   position: absolute;
-  background-color: #f9f9f9;
+  background-color: #d7d6d6;
   min-width: 160px;
   box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
   z-index: 1;
@@ -193,7 +190,7 @@ li.dropdown {
 /* Links inside the dropdown */
 .dropdown-content a {
   float: none;
-  color: black;
+  color: rgb(26, 26, 26);
   padding: 12px 16px;
   text-decoration: none;
   display: block;
@@ -202,7 +199,7 @@ li.dropdown {
 
 /* Add a grey background color to dropdown links on hover */
 .dropdown-content a:hover {
-  background-color: #ddd;
+  background-color: #c7bfcc;
 }
 
 /* Show the dropdown menu on hover */
@@ -211,19 +208,20 @@ li.dropdown {
 }
 
 html, body {
-    height: 100%;
+    height: fit-content;
     width: 100%;
-	  overflow: scroll;
+	  overflow: auto;
     background-color: linear-gradient(180deg, var(--gpStoreDarkGrey) 0%, var(--gpStoreDarkerGrey) 80%);
 }
+
 h1 {
     font-family: 'Trebuchet MS', Verdana, Helvetica, sans-serif;
-    font-size: 35px;
-    color: #4e697d;
+    font-size: 48px;
+    color: #e8e7ef;
 }
 
 h1.About {
-  padding-right: 5%;
+  padding-right: 5%
 }
 
 h1.userstats {
@@ -232,8 +230,10 @@ h1.userstats {
 
 h2 {
     font-family: 'Trebuchet MS', Verdana, Helvetica, sans-serif;
-    font-size: 18px;
-    color: #7A93A6;
+    font-size: 20px;
+    color: #e3e2f3;
+    padding-top: 2%;
+    padding-bottom: 3.5%;
 }
 
 h4 {
@@ -244,34 +244,22 @@ h4 {
 
 p {
     font-size: 18px;
-    color: #A7BACC;
+    color: #e3e2f3;
 }
 
 ol, ul {
 	list-style-position: inside;
 }
 
-#img1 {
-  max-width: 100%;
-  min-width: 100px;
-  height:auto;
+img {
+    width: 100%;
 }
 
-#img2 {
-  max-width: 100%;
-  min-width: 150px;
-  height:auto;
-}
-
-#img3 {
-  max-width: 100%;
-  min-width: 150px;
-  height:auto;
-}
-
-footer {
-    text-align: center;
-    color: #4e697d;
+footer p {
+  padding-top: 10%;
+  float: inline;
+  text-align: center;
+  color: #374d5e;
 }
 
 @media screen and (max-width: 400px) {

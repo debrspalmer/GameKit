@@ -1,4 +1,4 @@
-/* File name: webstyleInfo.css */
+/* File name: webstyleContact.css */
 
 @media (min-width: 992px) and (max-width: 1920px) {
 	background: #E8E8E8;
@@ -8,17 +8,17 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: 'Trebuchet MS', Verdana, Helvetica, sans-serif;
 }
 
 nav {
-	height: 80px;
+	height: 140px;
 	width: 100%;
-	background: #363636;
+	background: #2b2734ef;
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	padding: 15px;
+	padding: 1.5%;
 }
 
 .searchbar {
@@ -29,19 +29,31 @@ navbar {
 	justify-content: flex-end;
 }
 
+/* Add a background color and some padding around the form */
 .container {
-	background: #E8E8E8;
+	background-color: #625c66ef;
 	display: flex;
 	width: 100%;
-	height: 90%;
+	height: 100%;
 	margin: 0px;
-	padding: 10px;
+	padding: 20px;
+}
+
+.container form {
+  padding: 2%;
+}
+
+.container label {
+  font-family: 'Trebuchet MS', Verdana, Helvetica, sans-serif;
+  font-size: 22px;
+  color: #f1f0fb;
+  padding: 1%;
 }
 
 .logo {
-	max-height: 5%;
-	max-width: 5%;
-	padding-bottom: 60px;
+	padding-bottom: 7.5%;
+	max-height: 12%;
+	max-width: 12%;
 	justify-content: flex-start;
 }
 
@@ -54,70 +66,21 @@ navbar {
 	float: left;
 	margin-left: auto;
 	margin-right: auto;
-	text-align: center;
 	width: 100%;
 	line-height: 50px;
-	border: 3px solid #000000;
 	padding-top: 0%;
-}
-
-.About {
-	width: 85%;
-	display: grid;
-	float: left;
-	padding: 3%;
-	line-height: 30px;
 }
 
 .info {
 	width: 85%;
 	display: grid;
-	float: left;
-	padding-left: 3%;
-	padding-top: 10px;
-	line-height: 30px;
+	float: center;
+	padding-left: 5%;
+	padding-top: 2%;
+	line-height: 35px;
 }
 
-.column {
-  float: left;
-  width: 40%;
-  padding: 15px;
-}
-
-.row::after {
-  content: "";
-  clear: both;
-  display: table;
-}
-
-.grid-container {
-	height: 500px;
-	display: grid;
-	grid-template-columns: auto auto;
-	gap: 30px;
-	background-color: #E8E8E8;
-	padding: 30px;
-}
-
-.grid-container > div {
-	background-color: #d9d9d9;
-	line-height: 175%;
-	text-align: left;
-}
-
-ul {
-  list-style-type: none;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  background-color: #333;
-}
-
-li {
-  float: left;
-}
-
-li a, .dropbtn {
+a {
   display: inline-block;
   color: white;
   text-align: center;
@@ -125,11 +88,11 @@ li a, .dropbtn {
   text-decoration: none;
 }
 
-li a:hover, .dropdown:hover .dropbtn {
-  background-color: red;
+a:hover, .dropdown:hover .dropbtn {
+  background-color: rgb(191, 28, 28);
 }
 
-li.dropdown {
+.dropdown {
   display: inline-block;
 }
 
@@ -137,13 +100,14 @@ li.dropdown {
 .navbar {
   overflow: hidden;
   background-color: #333;
-  font-family: Arial;
+  font-family: 'Trebuchet MS', Verdana, Helvetica, sans-serif;
 }
 
 /* Links inside the navbar */
 .navbar a {
+  font-family: inherit;
   float: left;
-  font-size: 16px;
+  font-size: 18px;
   color: white;
   text-align: center;
   padding: 14px 16px;
@@ -158,10 +122,10 @@ li.dropdown {
 
 /* Dropdown button */
 .dropdown .dropbtn {
-  font-size: 16px;
+  font-size: 18px;
   border: none;
   outline: none;
-  color: white;
+  color: rgb(235, 229, 251);
   padding: 14px 16px;
   background-color: inherit;
   font-family: inherit; /* Important for vertical align on mobile phones */
@@ -170,14 +134,14 @@ li.dropdown {
 
 /* Add a red background color to navbar links on hover */
 .navbar a:hover, .dropdown:hover .dropbtn {
-  background-color: red;
+  background-color: rgb(191, 28, 28);
 }
 
 /* Dropdown content (hidden by default) */
 .dropdown-content {
   display: none;
   position: absolute;
-  background-color: #f9f9f9;
+  background-color: #d7d6d6;
   min-width: 160px;
   box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
   z-index: 1;
@@ -186,7 +150,7 @@ li.dropdown {
 /* Links inside the dropdown */
 .dropdown-content a {
   float: none;
-  color: black;
+  color: rgb(26, 26, 26);
   padding: 12px 16px;
   text-decoration: none;
   display: block;
@@ -195,7 +159,7 @@ li.dropdown {
 
 /* Add a grey background color to dropdown links on hover */
 .dropdown-content a:hover {
-  background-color: #ddd;
+  background-color: #c7bfcc;
 }
 
 /* Show the dropdown menu on hover */
@@ -204,64 +168,37 @@ li.dropdown {
 }
 
 html, body {
-    height: 100%;
+    height: fit-content;
     width: 100%;
-    overflow: hidden;
+	  overflow: auto;
     background-color: linear-gradient(180deg, var(--gpStoreDarkGrey) 0%, var(--gpStoreDarkerGrey) 80%);
-}
-h1 {
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: 30px;
-    color: #4e697d;
-}
-
-h1.userstats {
-	padding-left: 25px;
-}
-
-h2 {
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: 18px;
-    color: #7A93A6;
-}
-
-h4 {
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: 15px;
-    color: #4e697d;
-}
-
-p {
-    font-size: 18px;
-    color: #A7BACC;
-}
-
-ol, ul {
-	list-style-position: inside;
 }
 
 img {
-  max-width: 100%;
-  min-width: 100px;
-  height:auto;
+    width: 100%;
 }
 
 /* Style inputs with type="text", select elements and textareas */
 input[type=text], select, textarea {
+  font-size: 18px;
+  font-family: 'Trebuchet MS', Verdana, Helvetica, sans-serif;
   width: 100%; /* Full width */
-  padding: 12px; /* Some padding */ 
-  border: 1px solid #ccc; /* Gray border */
-  border-radius: 4px; /* Rounded borders */
+  padding: 10px; /* Some padding */ 
+  padding-top: 14px;
+  border: 1px solid #bfb7ca; /* Gray border */
+  border-radius: 3px; /* Rounded borders */
   box-sizing: border-box; /* Make sure that padding and width stays in place */
-  margin-top: 6px; /* Add a top margin */
+  margin-top: 10px; /* Add a top margin */
   margin-bottom: 16px; /* Bottom margin */
   resize: vertical /* Allow the user to vertically resize the textarea (not horizontally) */
 }
 
 /* Style the submit button with a specific background color etc */
 input[type=submit] {
-  background-color: #04AA6D;
-  color: white;
+  font-size: 18px;
+  font-family: 'Trebuchet MS', Verdana, Helvetica, sans-serif;
+  background-color: #049e65;
+  color: rgb(240, 236, 245);
   padding: 12px 20px;
   border: none;
   border-radius: 4px;
@@ -270,17 +207,11 @@ input[type=submit] {
 
 /* When moving the mouse over the submit button, add a darker green color */
 input[type=submit]:hover {
-  background-color: #45a049;
+  background-color: #44a849;
 }
 
-/* Add a background color and some padding around the form */
-.container {
-  border-radius: 5px;
-  background-color: #f2f2f2;
-  padding: 20px;
-}
-
-footer {
+footer p {
+    font-size: 20px;
     text-align: center;
-    color: #4e697d;
+    color: #477aa4;
 }
