@@ -175,7 +175,9 @@ html, body {
 }
 
 img {
-    width: 100%;
+  max-width: 100%;
+  min-width: 100px;
+  height:auto;
 }
 
 /* Style inputs with type="text", select elements and textareas */

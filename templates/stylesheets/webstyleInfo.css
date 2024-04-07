@@ -81,11 +81,19 @@ navbar {
   padding-left: 3%;
 }
 
-.column {
+.column1 {
   float: left;
   padding-left: 5%;
   width: 45%;
   padding: 1%;
+}
+
+.column2 {
+  float: left;
+  padding-left: 5%;
+  width: 45%;
+  padding: 1%;
+  position: relative;
 }
 
 .row::after {
@@ -251,12 +259,25 @@ ol, ul {
 	list-style-position: inside;
 }
 
-img {
-    width: 100%;
+#img1 {
+  max-width: 100%;
+  min-width: 100px;
+  height:auto;
+}
+
+#img2 {
+  max-width: 100%;
+  min-width: 150px;
+  height:auto;
+}
+
+#img3 {
+  max-width: 100%;
+  min-width: 150px;
+  height:auto;
 }
 
 footer p {
-  padding-top: 10%;
   float: inline;
   text-align: center;
   color: #374d5e;
