@@ -2,6 +2,7 @@ import requests, os, random, SteamHandler
 from json import dumps
 from flask import Flask, Response, render_template, redirect, request, send_from_directory
 from flask_apscheduler import APScheduler
+import traceback
 
 app = Flask(__name__)
 scheduler = APScheduler()
@@ -42,7 +43,7 @@ def search():
         return redirect(f"{web_url}/user/{search_query}")
     else:
         vanitysearch = Steam.resolve_vanity_url(search_query)
-        print(vanitysearch)
+        #print(vanitysearch)
         if vanitysearch['success'] == True:
             return redirect(f"{web_url}/user/{vanitysearch['steamid']}")
         else:
@@ -79,7 +80,7 @@ def friend_list(steamid):
 @app.route('/user/<steamid>/games')
 def game_list(steamid):
     games = Steam.get_user_owned_games(steamid)['games']
-    print(games)
+    #print(games)
     if not games:
         return render_template("examples/game_list_error_example.html", user=Steam.get_user_summeries([steamid])[steamid])
     return render_template("examples/game_list_example.html", games=games)
@@ -100,10 +101,10 @@ def game_api():
 def groups_api():
     try:
         steamid = request.args.get('steamid')
-        response = []
         response = Steam.get_user_group_list(steamid)
         return {'Response':response}
-    except:
+    except Exception:
+        traceback.print_exc()
         return Response(
         "Data is Private",
         status=401,
@@ -119,7 +120,7 @@ def achievments_api():
         for appid in appids:
             appachievment = Steam.get_user_achievements_per_game(steamid, appid)
             response.append(appachievment)
-            print(appachievment,'\n\n\n')
+            #print(appachievment,'\n\n\n')
         return {'Response':response}
     except:
         return Response(

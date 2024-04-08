@@ -19,11 +19,45 @@ async function loadFriends(usteamid) {
             if (data.hasOwnProperty(steamid)) {
                 const friend = data[steamid];
                 // Log or display the formatted output (avatar - personaname)
-                console.log(`${friend.avatar} - ${friend.personaname}`);
+                //console.log(`${friend.avatar} - ${friend.personaname}`);
                 document.getElementById("friends_list").innerHTML += `<li><a href='/user/${steamid}'>${friend.personaname}</a></li>`;
             }
         }
         document.getElementById("friends_list").innerHTML += `</ul>`;
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+async function loadGroups(usteamid) {
+    const apiUrl = `/api/groups?steamid=${usteamid}`;
+
+    fetch(apiUrl)
+    .then(response => {
+        if (!response.ok) {
+            document.getElementById("user_groups").innerHTML = `<p>Private</p>`;
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        // Iterate over each friend in the response
+        //document.getElementById("user_groups").innerHTML = `<ul>`;
+        let i = 0;
+        for (const allgroups in data.Response) {
+            i++;
+            if (i === 10) { break; }
+            const groups = data.Response.groups[i][0];
+            //console.log(groups)
+            for (const group in groups) {
+                console.log(groups[group][0])
+            }
+            
+            // Log or display the formatted output (avatar - personaname)
+            //console.log(`${friend.avatar} - ${friend.personaname}`);
+            //document.getElementById("user_groups").innerHTML += `<li><a href='/user/${steamid}'>${friend.personaname}</a></li>`;
+        }
+        //document.getElementById("user_groups").innerHTML += `</ul>`;
     })
     .catch(error => {
         console.error('Error:', error);
@@ -44,7 +78,7 @@ async function loadGames(usteamid) {
         let gamelist = "";
         for (let i = 0; i < data.games.length; i++) {
             const game = data.games[i];
-            console.log(game);
+            //console.log(game);
             //console.log(`http://media.steampowered.com/steamcommunity/public/images/apps/${game.appid}/${game.img_icon_url}.jpg - ${game.name} - ${game.playtime_forever}`);
             gamelist += `<a onclick="selectgame('${game.appid}','${game.name}')">${game.name}</a>`;
         }
@@ -56,7 +90,7 @@ async function loadGames(usteamid) {
             i++;
             if (i == 8) { break; }
             const game = data['games'][gamedata];
-            console.log(`http://media.steampowered.com/steamcommunity/public/images/apps/${game.appid}/${game.img_icon_url}.jpg - ${game.name}`);
+            //console.log(`http://media.steampowered.com/steamcommunity/public/images/apps/${game.appid}/${game.img_icon_url}.jpg - ${game.name}`);
             document.getElementById("games_list").innerHTML += `<li>${game.name}</li>`;
         }
         document.getElementById("games_list").innerHTML += `</ul>`;
@@ -66,7 +100,7 @@ async function loadGames(usteamid) {
         document.getElementById("most_played_games").innerHTML = `<ol>`;
         for (let i = 0; i < Math.min(3, sortedGames.length); i++) {
             const game = sortedGames[i];
-            console.log(`http://media.steampowered.com/steamcommunity/public/images/apps/${game.appid}/${game.img_icon_url}.jpg - ${game.name} - ${game.playtime_forever}`);
+            //console.log(`http://media.steampowered.com/steamcommunity/public/images/apps/${game.appid}/${game.img_icon_url}.jpg - ${game.name} - ${game.playtime_forever}`);
             document.getElementById("most_played_games").innerHTML += `<li>${Math.floor(game.playtime_forever/60)} hours - ${game.name}</li>`;
         }
         document.getElementById("most_played_games").innerHTML += `</ol>`;
@@ -77,7 +111,7 @@ async function loadGames(usteamid) {
         .map(game => game.appid)
         .join(',');
 
-        console.log(topsortedGames);
+        //console.log(topsortedGames);
         const apiUrl = `/api/achievments?steamid=${usteamid}&appids=${topsortedGames}`;
         
         fetch(apiUrl)
@@ -99,7 +133,7 @@ async function loadGames(usteamid) {
                 return item;
                 }
             });
-            console.log(filteredData);
+            //console.log(filteredData);
             
             // Sorting the achievements by unlocktime in descending order
             responseData = filteredData.flat().filter(data => data.playerstats?.achievements?.length > 0);
@@ -159,8 +193,8 @@ function myFunction() {
   }
 function selectgame(appid,appname) {
     document.getElementById("GameSelection").innerHTML = appname;
-    console.log(appid);
-    console.log(appname);
+    //console.log(appid);
+    //console.log(appname);
     appidselection = appid;
 }
 let appidselection = 0;

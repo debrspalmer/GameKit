@@ -62,7 +62,7 @@ class Steam:
         if friend_ids == []:
             response = requests.get(f"http://api.steampowered.com/ISteamUser/GetFriendList/v0001/?key={self.STEAM_KEY}&steamid={steamid}&relationship=friend")
             if not "friendslist" in response.json():
-                print(response.json(), "Error getting friends data")
+                #print(response.json(), "Error getting friends data")
                 return False
             friend_ids = [i['steamid'] for i in response.json()["friendslist"]["friends"]]
             self.db_manager.insert_friend_list(steamid, friend_ids)
@@ -201,7 +201,7 @@ class Steam:
         data = response.json()
         #data = response.json()['response']
         self.cache['user_inventory'][steamid] = data
-        print(data)
+        #print(data)
         return data
 
     def get_user_group_list(self, steamid):
@@ -215,8 +215,10 @@ class Steam:
             groups = self.db_manager.fetch_user_groups(steamid)
         newgroups = []
         for group in groups['groups']:
-            if group['gid'] != 'success': 
+            if 'gid' in group: 
                 newgroups.append(self.get_group_data(group['gid']))
+            else:
+                newgroups.append(group)
         groups['groups'] = newgroups
         return groups
     
@@ -272,7 +274,7 @@ class Steam:
         user_badges = self.db_manager.fetch_user_badges(steamid)
         if user_badges == []:
             response = requests.get(f"https://api.steampowered.com/IPlayerService/GetBadges/v1?steamid={steamid}&key={self.STEAM_KEY}")
-            print(response.json())
+            #print(response.json())
             if response.status_code not in range(200,299):
                 return []
             try:
