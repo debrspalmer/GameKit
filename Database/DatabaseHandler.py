@@ -55,6 +55,18 @@ class DatabaseManager:
                 FOREIGN KEY (steamid) REFERENCES users(steamid)
             )
         ''')
+
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS SteamGroupData (
+                groupid INTEGER PRIMARY KEY,
+                groupName TEXT,
+                groupURL TEXT,
+                headline TEXT,
+                summary TEXT,
+                avatarFull TEXT,
+                memberCount INT
+            )
+        ''')
         
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS UserGames (
@@ -79,8 +91,11 @@ class DatabaseManager:
         
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS UserGroups (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
                 steamid TEXT,
-                gid TEXT
+                groupid TEXT,
+                FOREIGN KEY (steamid) REFERENCES users(steamid)
+                FOREIGN KEY (groupid) REFERENCES SteamGroupData(groupid)
             )
         ''')
         
@@ -137,6 +152,7 @@ class DatabaseManager:
         cursor.execute(query, values)
         conn.commit()
         conn.close()
+    
 
     def insert_user_summary(self, reponse):
         for data in reponse["response"]["players"]:
@@ -453,6 +469,55 @@ class DatabaseManager:
                 ) VALUES (?, ?, ?, ?, ?, ?)
             '''
             self.execute_query(query, values)
+
+
+    # Groups do not return value in json, so there is no need to follow a specific return format
+    def fetch_group(self, groupid):
+        query = '''
+            SELECT * FROM SteamGroupData WHERE groupid = ?
+        '''
+        conn = sqlite3.connect(self.database)
+        cursor = conn.cursor()
+        cursor.execute(query, (groupid,))
+        results = cursor.fetchall()
+        result = []
+        if cursor.description:
+            column_names = [desc[0] for desc in cursor.description]
+
+            # Create a list of dictionaries with column names as keys
+            for row in results:
+                result.append(dict(zip(column_names, row)))
+        conn.close()
+        return result
+
+    def insert_group(self, groupid, groupName, groupURL, headline, summary, avatarFull, memberCount):
+        exisiting_group = self.fetch_group(groupid)
+        if exisiting_group != []:
+            return
+        values = [
+            groupid,
+            groupName,
+            groupURL,
+            headline,
+            summary,
+            avatarFull,
+            memberCount
+        ]
+        query = '''
+            INSERT INTO SteamGroupData (
+                groupid,
+                groupName,
+                groupURL,
+                headline,
+                summary,
+                avatarFull,
+                memberCount
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+        '''
+        self.execute_query(query, values)
+
+
+          
         
     def fetch_user_achievements(self, steamid, appid):
         cache_key = f"achievements_{steamid}_{appid}"
@@ -522,7 +587,7 @@ class DatabaseManager:
         existing_group = self.fetch_user_groups(steamid)
         if existing_group != []:
             return
-        for group in groups['groups']:
+        for group in groups:
             values = [
                 steamid,
                 group['gid']
@@ -530,7 +595,7 @@ class DatabaseManager:
             query = '''
                 INSERT INTO UserGroups (
                     steamid,
-                    gid
+                    groupid
                 ) VALUES (?, ?)
             '''
             self.execute_query(query, values)
@@ -539,7 +604,7 @@ class DatabaseManager:
         if steamid in self.cache['user_groups']:
             return self.cache['user_groups'][steamid]
         
-        query = "SELECT gid FROM UserGroups WHERE steamid = ?"
+        query = "SELECT groupid FROM UserGroups WHERE steamid = ?"
         conn = sqlite3.connect(self.database)
         cursor = conn.cursor()
         cursor.execute(query, (steamid,))

@@ -96,7 +96,19 @@ def game_api():
     else:
         return data
         
-    
+@app.route("/api/groups")
+def groups_api():
+    try:
+        steamid = request.args.get('steamid')
+        response = []
+        response = Steam.get_user_group_list(steamid)
+        return {'Response':response}
+    except:
+        return Response(
+        "Data is Private",
+        status=401,
+    )
+
 @app.route("/api/achievments")
 def achievments_api():
     try:

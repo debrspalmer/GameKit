@@ -1,6 +1,8 @@
 import requests
 from urllib.parse import urlencode
 import Database.DatabaseHandler as Database
+from xml.etree import ElementTree
+import xmltodict
 
 class Steam:
     def __init__(self, key):
@@ -45,8 +47,9 @@ class Steam:
         if not_cached_steamids:
             # Make one request for all not cached steamids
             response = requests.get(f"http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key={self.STEAM_KEY}&steamids={','.join(not_cached_steamids)}")
-            data = response.json()
-            self.db_manager.insert_user_summary(data)
+            if response.status_code in range(200,299):
+                data = response.json()
+                self.db_manager.insert_user_summary(data)
             
         # Retrieve data from cache for all steamids
         for steamid in steamids:
@@ -72,7 +75,6 @@ class Steam:
             request_url = f"http://api.steampowered.com/ISteamUserStats/GetPlayerAchievements/v0001/?appid={appid}&key={self.STEAM_KEY}&steamid={steamid}"
             response = requests.get(request_url)
             if response.status_code not in range(200,299):
-                print(request_url, '\nStatus code', response.status_code)
                 return []
             try:
                 data = response.json()  
@@ -209,12 +211,45 @@ class Steam:
             if response.status_code not in range(200,299):
                 return []
             data = response.json()['response']
-            print('\n\n\n\n\n',data)
-            self.db_manager.insert_user_groups(steamid, data)
+            self.db_manager.insert_user_groups(steamid, data['groups'])
             groups = self.db_manager.fetch_user_groups(steamid)
-            return groups
+        newgroups = []
+        for group in groups['groups']:
+            if group['gid'] != 'success': 
+                newgroups.append(self.get_group_data(group['gid']))
+        groups['groups'] = newgroups
         return groups
     
+
+    def get_group_data(self, groupids):
+        totalresponse = []
+        if type(groupids) != list:
+            groupids = [groupids]
+        for groupid in groupids:
+            print('obtaining groupdata for', groupid)
+            db_result = self.db_manager.fetch_group(groupid)
+            if db_result != []:
+                totalresponse.append({groupid:db_result})
+                continue
+            response = requests.get(f"https://steamcommunity.com/gid/{groupid}/memberslistxml/?xml=1")
+            if response.status_code not in range(200,299):
+                    totalresponse.append({groupid:[]})
+            data = xmltodict.parse(response.content)
+            groupName = data.get('memberList', {}).get('groupDetails', {}).get('groupName', None)
+            groupURL = data.get('memberList', {}).get('groupDetails', {}).get('groupURL', None)
+            headline = data.get('memberList', {}).get('groupDetails', {}).get('headline', None)
+            summary = data.get('memberList', {}).get('groupDetails', {}).get('summary', None)
+            avatarFull = data.get('memberList', {}).get('groupDetails', {}).get('avatarFull', None)
+            memberCount = data.get('memberList', {}).get('memberCount', None)
+
+            self.db_manager.insert_group(groupid, groupName=groupName,groupURL=groupURL,headline=headline, summary=summary,avatarFull=avatarFull, memberCount=memberCount)
+            db_result = self.db_manager.fetch_group(groupid)
+            totalresponse.append({groupid:db_result})
+        return totalresponse
+    def __link_group_to_user(self, groupid, userids):
+        for user in userids:
+            self.db_manager.insert_user_groups(user,[{'gid':groupid}])
+
     def get_number_of_players_in_game(self, appid):
         response = requests.get(f"https://api.steampowered.com/ISteamUserStats/GetNumberOfCurrentPlayers/v1?appid={appid}")
         if response.status_code not in range(200,299):
