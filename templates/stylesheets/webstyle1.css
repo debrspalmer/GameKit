@@ -93,6 +93,7 @@ main {
 
 .item1 {
 	padding: 30px;
+	padding-right: 0px;
 	grid-column-start: 1;
 	grid-column-end: 2;
 }
@@ -105,6 +106,7 @@ main {
 
 .item3 {
 	padding: 30px;
+	padding-right: 0px;
 	grid-column-start: 1;
 	grid-column-end: 2;
 }
