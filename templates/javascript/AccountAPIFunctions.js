@@ -42,22 +42,33 @@ async function loadGroups(usteamid) {
     })
     .then(data => {
         // Iterate over each friend in the response
-        //document.getElementById("user_groups").innerHTML = `<ul>`;
+        document.getElementById("user_groups").innerHTML = `<ul>`;
         let i = 0;
-        for (const allgroups in data.Response) {
+        let done = []
+        for (const allallgroups in data.Response) {
             i++;
-            if (i === 10) { break; }
-            const groups = data.Response.groups[i][0];
-            //console.log(groups)
-            for (const group in groups) {
-                console.log(groups[group][0])
+            for (const allgroups in allallgroups) {
+                
+                if (i === 10) { break; }
+                const groups = data.Response.groups[i];
+                for (const group in groups[0]) {
+                    const cgroup = groups[0][group][0]
+                    if (done.includes(cgroup['groupid'])) {
+                        
+                    } else {
+                        console.log(cgroup);
+                        document.getElementById("user_groups").innerHTML += `<li>${cgroup.groupName}</li>`;
+                        done.push(cgroup['groupid'])
+                
+                    }
+           
+                }
             }
-            
             // Log or display the formatted output (avatar - personaname)
             //console.log(`${friend.avatar} - ${friend.personaname}`);
             //document.getElementById("user_groups").innerHTML += `<li><a href='/user/${steamid}'>${friend.personaname}</a></li>`;
         }
-        //document.getElementById("user_groups").innerHTML += `</ul>`;
+        document.getElementById("user_groups").innerHTML += `</ul>`;
     })
     .catch(error => {
         console.error('Error:', error);
