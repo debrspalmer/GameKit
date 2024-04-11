@@ -31,8 +31,8 @@ navbar {
 	background: #E8E8E8;
 	display: flex;
 	width: 100%;
-	height: 90%;
-	margin: 0px;
+	height: 130%;
+	margin: auto;
 	padding: 10px;
 }
 
@@ -48,19 +48,20 @@ navbar {
 	max-width: 200px;
 }
 
-.main {
+main {
 	float: left;
 	margin-left: auto;
 	margin-right: auto;
-	text-align: center;
+	text-align: left;
 	width: 100%;
 	line-height: 50px;
-	border: 3px solid #000000;
+	border: 3px #E8E8E8;
 	padding-top: 0%;
 }
 
 .user {
 	width: 85%;
+	height: 100%;
 	display: grid;
 	float: left;
 }
@@ -76,22 +77,21 @@ navbar {
 }
 
 .grid-container {
-	height: 400px;
-  display: grid;
-  grid-template-columns: auto auto;
-  gap: 30px;
-  background-color: #E8E8E8;
-  padding: 30px;
+	height: 500px;
+	display: grid;
+	grid-template-columns: auto auto;
+	gap: 30px;
+	background-color: #E8E8E8;
+	padding: 30px;
 }
 
 .grid-container > div {
-  background-color: #d9d9d9;
-  line-height: 175%;
-  text-align: left;
+	background-color: #d9d9d9;
+	line-height: 175%;
+	text-align: left;
 }
 
 .item1 {
-	
 	padding: 30px;
 	grid-column-start: 1;
 	grid-column-end: 2;
@@ -126,7 +126,7 @@ navbar {
 .friends-list {
 	padding: 15px;
 	background: #d9d9d9;
-	width: 300px;
+	width: 100%;
 	height: 350px;
 	line-height: 200%;
 	border: 2px #E8E8E8;
@@ -135,10 +135,50 @@ navbar {
 .game-library {
 	padding: 15px;
 	background: #d9d9d9;
-	width: 300px;
+	width: 100%;
 	height: 350px;
 	line-height: 200%;
 	border: 2px #E8E8E8;
+}
+
+.GameQuery {
+	width: 85%;
+	float: left;
+	gap: 10px;
+	line-height: 175%;
+}
+
+.leftdivision
+{
+    float: left;
+	padding-left: 25px;
+	padding-top: 15px;
+}
+   
+.middledivision
+{
+    float: left;
+	padding-left: 35px;
+	padding-top: 15px;
+}
+
+.rightdivision
+{
+    float: left;
+	padding-left: 35px;
+	padding-top: 15px;
+}
+
+.databox {
+	padding-left: 25px;
+	padding-top: 55px;
+}
+
+.box{ 
+    width: 116%; 
+    height: 200px; 
+    border: 2px #E8E8E8; 
+	background: #d9d9d9;
 }
 
 /* Navbar container */
@@ -211,12 +251,13 @@ navbar {
   display: block;
 }
 
-html, body {
+html {
     height: 100%;
     width: 100%;
-	overflow: hidden;
+	overflow: scroll;
     background-color: linear-gradient(180deg, var(--gpStoreDarkGrey) 0%, var(--gpStoreDarkerGrey) 80%);
 }
+
 h1 {
     font-family: Arial, Helvetica, sans-serif;
     font-size: 30px;
@@ -225,7 +266,17 @@ h1 {
 
 h1.userstats {
 	padding-left: 25px;
+	/* text-align: center; */
 }
+
+h1.userdatasearch {
+	padding-left: 25px;
+}
+
+/* May or may not need */
+/* h1.centerText {
+	text-align: center;
+} */
 
 h2 {
     font-family: Arial, Helvetica, sans-serif;
@@ -241,7 +292,11 @@ h4 {
 
 p {
     font-size: 18px;
-    color: #A7BACC;
+    color: #7e9bb6;
+}
+
+p.datahere {
+	padding: 30px;
 }
 
 ol, ul {
@@ -249,10 +304,130 @@ ol, ul {
 }
 
 img {
-    width: 100%;
+    max-width: 100%;
+	min-width: 100px;
+	height: auto;
 }
 
 footer {
     text-align: center;
     color: #4e697d;
+}
+
+@media screen and (max-width: 400px) {
+	
+	.grid-container {
+		display: table-column;
+		height: auto;
+	}
+	
+	.item1 {
+		position: relative;
+		width: 100%;
+	}
+	
+	.item2 {
+		position: relative;
+		top: 20px;
+	}
+	
+	.item3 {
+		position: relative;
+		top: 35px;
+	}
+	
+	.item4 {
+		position: relative;
+		top: 45px;
+	}
+	
+	p {
+		font-size: .8em;
+	}
+	
+	h1 {
+		font-size: 1.3em;
+		height: 25px;
+	}
+	
+	#img2 {
+		min-width: 140px;
+		height: 80%;
+	}
+	
+	.userdetails {
+		padding: 20px;
+	}
+	
+	html {
+		height: 100%;
+		width: auto;
+		max-width: 100%;
+		overflow: scroll;
+		background-color: #E8E8E8;
+		
+	}
+	
+	.friends-game-library {
+		display: table-column;
+		width: 95%;
+		position: relative;
+		height: auto;
+		top: 40px;
+		
+	}
+	
+	.friends-list {
+		width: 90%;
+		position: relative;
+		height: auto;
+		left: 10px;
+	}
+	
+	.game-library {
+		width: 90%;
+		left: 10px;
+		height: auto;
+		position: relative;
+		top: 10px;
+	}
+	
+	.user {
+		width: auto;
+		height: auto;
+	}
+	
+	.container {
+		max-width: 100%;
+		margin: 0px;
+
+	}
+	
+	main {
+		height: auto;
+		max-height: 100%;
+	}
+	
+	.box {
+		width:100%;
+	}
+	
+	.databox {
+		width: 100%;
+	}
+	
+	.GameQuery {
+		position: relative;
+		height: auto;
+		top: 30px;
+	}
+	
+	footer {
+		position: relative;
+		padding-top: 50px;
+	}
+	
+	.userstats {
+		line-height: 0px;
+	}
 }

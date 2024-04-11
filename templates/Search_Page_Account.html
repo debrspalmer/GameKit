@@ -1,18 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<link href="stylesheets/webstyleSearch.css" rel="stylesheet" type="text/css">
+	<link href="/stylesheets/webstyleSearch.css" rel="stylesheet" type="text/css">
     <meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Account Search Page</title>
     <script src="https://kit.fontawesome.com/b353a8d556.js" crossorigin="anonymous"></script>
 
 </head>
 <body>
     <nav>
-		<div class="logo"><img src="GK_logo.png" alt="GameKit Logo"></div>
+		<div class="logo"><img src="/images/GK_logo.png" alt="GameKit Logo"></div>
 		<!-- need to implement Navigation tool & Acc settings -->
 		<div class="navbar">
-		  <a href="Wire Frame 2.html">Your Profile</a>
+		  <a href="{{ web_url }}/auth">Your Profile</a>
 			  <div class="dropdown">
 				<button class="dropbtn">Dropdown
 				  <i class="fa fa-caret-down"></i>
@@ -30,10 +31,11 @@
     <div class="container">
 			<main>
 			<div class="search-box">
-			<h1>What is the player's Steam ID?</h1>
-				<div class="searchbar">	
-					<input type="text" placeholder="Example: 12546982156879325">
-				</div>
+				<h1>What is the player's Steam ID?</h1>
+				<form class="search-bar" action="/search" method="get" >
+					<input type="text", placeholder="Profile ID/Vanity URL" name="search" size="100">
+					<button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+				</form>
 			</div>
 			<!-- not sure if I wanna keep this or not -->
 			<div class="player-search">
