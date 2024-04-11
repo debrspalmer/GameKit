@@ -7,17 +7,25 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: 'Trebuchet MS', Verdana, Helvetica, sans-serif;
 }
 
 nav {
-	height: 80px;
+	height: 140px;
 	width: 100%;
-	background: #989898;
+	background: linear-gradient(to bottom right, #413e49ef,#110f16ef);
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	padding: 15px;
+	padding: 1.5%;
+}
+
+.logo {
+  padding-bottom: 7.5%;
+	max-height: 12%;
+	max-width: 12%;
+  opacity: 70%;
+	justify-content: flex-start;
 }
 
 .searchbar {
@@ -29,25 +37,13 @@ navbar {
 }
 
 .container {
-	background: white;
+	background: linear-gradient(to bottom left, #6f6775ef,#1b1922ef);
 	display: flex;
 	width: 100%;
 	height: 90%;
 	margin: 0px;
 	padding: 10px;
 	flex-direction: column;
-}
-
-.logo {
-	max-height: 5%;
-	max-width: 5%;
-	padding-bottom: 60px;
-	justify-content: flex-start;
-}
-
-.pfp {
-	max-height: 13;
-	max-width: 13%;
 }
 
 .main {
@@ -57,7 +53,6 @@ navbar {
 	text-align: center;
 	width: 100%;
 	line-height: 50px;
-	border: 3px solid #000000;
 	padding-top: 0%;
 }
 
@@ -66,8 +61,6 @@ navbar {
 	height: 100%;
 	text-align: center;
 	padding: 15%;
-	background: #E8E8E8;
-	
 }
 
 .searchbar {
@@ -83,15 +76,15 @@ navbar {
 
 /* Navbar container */
 .navbar {
-  overflow: hidden;
+  overflow: auto;
   background-color: #333;
-  font-family: Arial;
+  font-family: 'Trebuchet MS', Verdana, Helvetica, sans-serif;
 }
 
 /* Links inside the navbar */
 .navbar a {
   float: left;
-  font-size: 16px;
+  font-size: 18px;
   color: white;
   text-align: center;
   padding: 14px 16px;
@@ -106,7 +99,7 @@ navbar {
 
 /* Dropdown button */
 .dropdown .dropbtn {
-  font-size: 16px;
+  font-size: 18px;
   border: none;
   outline: none;
   color: white;
@@ -118,14 +111,14 @@ navbar {
 
 /* Add a red background color to navbar links on hover */
 .navbar a:hover, .dropdown:hover .dropbtn {
-  background-color: red;
+  background-color: rgb(191, 28, 28);
 }
 
 /* Dropdown content (hidden by default) */
 .dropdown-content {
   display: none;
   position: absolute;
-  background-color: #f9f9f9;
+  background-color: #d7d6d6;
   min-width: 160px;
   box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
   z-index: 1;
@@ -133,8 +126,9 @@ navbar {
 
 /* Links inside the dropdown */
 .dropdown-content a {
+  font-size: 18px;
   float: none;
-  color: black;
+  color: rgb(26, 26, 26);
   padding: 12px 16px;
   text-decoration: none;
   display: block;
@@ -143,7 +137,7 @@ navbar {
 
 /* Add a grey background color to dropdown links on hover */
 .dropdown-content a:hover {
-  background-color: #ddd;
+  background-color: #c7bfcc;
 }
 
 /* Show the dropdown menu on hover */
@@ -154,29 +148,12 @@ navbar {
 html, body {
     height: 100%;
     width: 100%;
-    background-color: linear-gradient(180deg, var(--gpStoreDarkGrey) 0%, var(--gpStoreDarkerGrey) 80%);
 }
 
 h1 {
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: 'Trebuchet MS', Verdana, Helvetica, sans-serif;
     font-size: 30px;
-    color: #4e697d;
-}
-
-h1.userstats {
-	padding-left: 25px;
-}
-
-h2 {
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: 20px;
-    color: #7A93A6;
-}
-
-h4 {
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: 15px;
-    color: #4e697d;
+    color:#e8e7ef;
 }
 
 p {
@@ -184,15 +161,25 @@ p {
     color: #A7BACC;
 }
 
-ol, ul {
-	list-style-position: inside;
-}
-
 img {
     width: 100%;
 }
 
-footer {
-    text-align: center;
-    color: #4e697d;
+input[type=text], select, textarea {
+  font-size: 20px;
+  font-family: 'Trebuchet MS', Verdana, Helvetica, sans-serif;
+  padding: 10px;
+  padding-top: 14px;
+  border: 1px solid #bfb7ca;
+  border-radius: 3px;
+  box-sizing: border-box;
+  margin-top: 10px;
+  margin-bottom: 16px; 
+  resize: vertical; 
+}
+
+footer p {
+  font-size: 20px;
+  text-align: center;
+  color: #477aa4;
 }
