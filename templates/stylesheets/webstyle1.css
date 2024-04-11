@@ -41,13 +41,17 @@ main {
 	line-height: 30px;
 }
 
+.container {
+	background: linear-gradient(to bottom left, #6f6775ef,#1b1922ef);
+}
+
 .grid-container {
 	background: linear-gradient(to bottom left, #6f6775ef,#1b1922ef);
 	height: 500px;
 	display: grid;
 	grid-template-columns: auto auto;
 	gap: 30px;
-	background-color: #E8E8E8;
+
 	padding: 30px;
 }
 
